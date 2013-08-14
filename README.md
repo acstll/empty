@@ -20,7 +20,7 @@ Available as old browser global (grab the file from the dist folder):
 
 `<script src="empty.js"></script>`
 
-AMD also supported, you know how that goes, haven't test it.
+AMD also supported, you know how that goes, haven't tested it.
 
 ## Usage
 
