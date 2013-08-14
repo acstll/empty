@@ -2,6 +2,8 @@
 
 Evented object and array operations with the events library of your choice.
 
+[![browser support](https://ci.testling.com/USER/PROJECT.png)](https://ci.testling.com/USER/PROJECT)
+
 This little library fits modular, diy MV* architectures where:
 
 - Plain classes for models and plain arrays for collections just suffice.
@@ -27,7 +29,7 @@ You *need* an external EventEmitter library. Require it and require Empty.
 	var Empty = require('empty');
 	var EventEmitter2 = require('eventemitter2').EventEmitter2
 
-Call Empty.configure with the EventEmitter library as 'events' in a hash:
+Call `Empty.configure` with the EventEmitter library as 'events' in a hash:
 
 	Empty.configure({
 	  events: EventEmitter2
