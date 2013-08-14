@@ -1,0 +1,2 @@
+- write README
+- tests for configure, id, and missing cases
