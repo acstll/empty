@@ -2,7 +2,7 @@
 
 Evented object and array operations with the events library of your choice.
 
-[![browser support](https://ci.testling.com/USER/PROJECT.png)](https://ci.testling.com/USER/PROJECT)
+[![browser support](https://ci.testling.com/acstll/empty.png)](https://ci.testling.com/acstll/empty)
 
 This little library fits modular, diy MV* architectures where:
 

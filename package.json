@@ -52,7 +52,14 @@
       ],
       "opera": [
         11,
-        12
+        12,
+        "next"
+      ],
+      "android-browser": [
+        4.2
+      ],
+      "iphone": [
+        6
       ]
     }
   },
