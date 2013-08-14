@@ -2,14 +2,42 @@
 
 Evented object and array operations with the events library of your choice.
 
+This little library fits modular, diy MV* architectures where:
+
+- Plain classes for models and plain arrays for collections just suffice.
+- You're already working with an EventeEmitter library in your project and don't want every other libray you use having its own implementation of pub/sub.
+- You want to listen for changes on regular and/or custom operations.
+
+## Install
+
+Use with [browserify](https://github.com/substack/node-browserify) or [gluejs](https://github.com/mixu/gluejs):
+
+`npm install empty`
+
+Available as old browser global (grab the file from the dist folder):
+
+`<script src="empty.js"></script>`
+
+AMD also supported, you know how that goes, haven't test it.
+
+## Usage
+
+You *need* an external EventEmitter library. Require it and require Empty.
+
 	var Empty = require('empty');
 	var EventEmitter2 = require('eventemitter2').EventEmitter2
+
+Call Empty.configure with the EventEmitter library as 'events' in a hash:
 
 	Empty.configure({
 	  events: EventEmitter2
 	});
 
+Make an instance, `new` is optional. I name it `__` but of course you can name it anything you like.
+
 	var __ = new Empty();
+
+Use it like this:
 
 	var collection = __.array([1, 2, 3, 4], 'numbers');
 
@@ -21,17 +49,13 @@ Evented object and array operations with the events library of your choice.
 	> 5
 	> 'pushed 5 to numbers collection'
 
-	collection.length
+	collection.length;
 	> 5
-
-This little library fits DIY MV* arquitectures where:
-
-- Plain classes for models and plain arrays for collections just suffice.
-- You're already working with an EventeEmitter library in your project and don't want every other libray you use having its own implementation of pub/sub.
-- You want to listen for changes on regular and/or custom operations.
 
 ## Motivation
 
 I'm writing this for mainly one reason: **to learn JavaScript**.
 
-This is a work in progress!
+This is a work in progress and I don't expect you to use this at all.
+
+Comments, thoughts, contributions, insults and complaints are all welcome.
