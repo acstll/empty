@@ -1,6 +1,6 @@
 {
   "name": "empty",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Arturo Castillo Delgado <19@8302.net>",
   "description": "Evented object and array operations with the events library of your choice.",
   "main": "index.js",

@@ -1,5 +1,5 @@
 // Empty evented library
-// version: 0.1.0  
+// version: 0.1.1  
 // author: Arturo Castillo Delgado  
 // license: MIT  
 // repo: https://github.com/acstll/empty
@@ -56,10 +56,8 @@ Empty.use = function (Events) {
 // Copy options to Empty.config.
 
 Empty.configure = function (options) {
-  if (options.events && !Empty.config.events) {
-    //Call `use once to inherit EventEmitter behaviour. 
-    Empty.use(options.events);
-  }
+  // Call `use` to inherit EventEmitter behaviour. 
+  if (options.events) Empty.use(options.events);
 
   Empty.config = extend({}, defaults, options);
 };
