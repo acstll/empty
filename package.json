@@ -29,7 +29,7 @@
     "test": "./node_modules/.bin/tap ./test"
   },
   "testling": {
-    "files": "test/test.js",
+    "files": "test/*.js",
     "browsers": {
       "ie": [
         8,
