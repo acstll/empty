@@ -1,4 +1,4 @@
-var test = require('tap').test;
+var test = require('tape');
 var Empty = require('../.');
 
 var EventEmitter2 = require('eventemitter2').EventEmitter2;

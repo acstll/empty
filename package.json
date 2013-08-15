@@ -6,7 +6,7 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "tap": "0.4.x",
+    "tape": "1.0.x",
     "wolfy87-eventemitter": "4.2.x",
     "eventemitter2": "0.4.x",
     "backbone": "1.0.0",
@@ -26,7 +26,7 @@
     "url": "https://github.com/acstll/empty.git"
   },
   "scripts": {
-    "test": "./node_modules/.bin/tap ./test"
+    "test": "./node_modules/.bin/tape ./test/*.js"
   },
   "testling": {
     "files": "test/*.js",

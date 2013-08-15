@@ -1,6 +1,6 @@
 var Backbone = require('backbone');
 
-var test = require('tap').test;
+var test = require('tape');
 var Empty = require('../.');
 
 

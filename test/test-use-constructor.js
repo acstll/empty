@@ -1,6 +1,6 @@
 var EventEmitter = require('wolfy87-eventemitter');
 
-var test = require('tap').test;
+var test = require('tape');
 var Empty = require('../.');
 
 
