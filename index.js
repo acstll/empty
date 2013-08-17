@@ -337,6 +337,8 @@ function generateId () {
 // So if the property being set is the id itself, the change:key:id event uses the latest id.
 
 function ensureId (object, key, value) {
+  if (!object._empty) initialize(object);
+  
   var oldId = object._empty.id;
   var ownId = object[Empty.config.idKey];
 
