@@ -287,6 +287,17 @@ set.inc = function () {
   return update.apply(null, args);
 };
 
+set.toggle = function () {
+  var args = [].slice.call(arguments);
+  args.unshift(operation);
+  
+  function operation (target, value) {
+    return !target;
+  }
+  
+  return update.apply(null, args);
+}
+
 function update (fn, object, key, value) {
   var target;
   var result;

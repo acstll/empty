@@ -150,8 +150,8 @@ test('Empty#set shouldn\'t fire `change` when setting the same value', function 
   __.set(object, 'a.b.c', 'foo');
 });
 
-test('Empty#set push, pop, concat, inc operations', function (t) {
-  t.plan(5);
+test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
+  t.plan(7);
 
   var __ = new Empty();
 
@@ -160,7 +160,8 @@ test('Empty#set push, pop, concat, inc operations', function (t) {
     level: {
       numbers: [1, 2, 3],
       count: 0
-    }
+    },
+    bool: true
   });
 
   __.once('change:level.numbers', function (obj) {
@@ -181,6 +182,12 @@ test('Empty#set push, pop, concat, inc operations', function (t) {
 
   __.set(object, 'level.count', -1, 'inc');
   t.equal(object.level.count, 0, 'inc works with negative value');
+
+  __.set(object, 'bool', null, 'toggle');
+  t.equal(object.bool, false, 'toggle works (1)');
+
+  __.set(object, 'bool', null, 'toggle');
+  t.equal(object.bool, true, 'toggle works (2)');
 });
 
 test('Empty#unset', function (t) {
