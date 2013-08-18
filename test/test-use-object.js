@@ -1,4 +1,4 @@
-var Backbone = require('backbone');
+var Backbone = require('./fixtures/backbone-events');
 
 var test = require('tape');
 var Empty = require('../.');
