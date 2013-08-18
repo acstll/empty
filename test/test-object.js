@@ -191,7 +191,7 @@ test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
 });
 
 test('Empty#unset', function (t) {
-  t.plan(9);
+  t.plan(4);
 
   var __ = new Empty();
   var object = __.object({
@@ -214,17 +214,4 @@ test('Empty#unset', function (t) {
   var previous = __.unset(object, 'beep.boop');
 
   t.equal(previous, 1, 'previous value returned');
-
-  __.set(object, {
-    foo: 'baz',
-    beep: 'boop'
-  });
-
-  var cleared = __.unset(object);
-
-  t.ok(object.toJSON, 'unset with no key clears object (toJSON)');
-  t.ok(object._empty, 'unset with no key clears object (_empty)');
-  t.notOk(object.foo, 'unset with no key clears object (1)');
-  t.notOk(object.beep, 'unset with no key clears object (2)');
-  t.deepEqual(cleared, object, 'cleared object returned remains the same object');
 });

@@ -198,25 +198,16 @@ Empty.prototype.unset = function (object, key) {
   var id;
   var d = Empty.config.delimiter;
   
+  if (!key) return;
+
   if (!object._empty) initialize(object);
-
-  // If no key, clear object.
-  // TODO: fix.
-  if (!key) {
-    for (_key in object) {
-      if (_key !== '_empty') {
-        object[_key] = void 0;
-        delete object[_key];
-      }
-    }
-
-    return initialize(object);
-  }
 
   previous = get(object, key);
   id = ensureId.call(this, object, key);
 
-  if (unset(object, key)) {
+  if (unset(object, key) && previous !== 'undefined') {
+    set(object._empty.previous, key, previous);
+
     this._emit('change', object);
     this._emit(['change', key].join(d), object);
   } 
@@ -296,7 +287,7 @@ set.toggle = function () {
   }
   
   return update.apply(null, args);
-}
+};
 
 function update (fn, object, key, value) {
   var target;
