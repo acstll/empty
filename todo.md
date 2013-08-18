@@ -1,6 +1,0 @@
-- unset with no key emits no events, and also discards previous state which is silly
-- add splice and almost all Array proto funcs
-- fire 'change' event on arrays
-- write better README plus API
-- test dotty somehow
-- tests for configure, id, and missing cases
