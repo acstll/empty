@@ -2,6 +2,8 @@
 
 Evented object and array operations with the events library of your choice.
 
+*This is a work in progress and I don't expect you to use this at all.*
+
 This little library fits modular, diy MV* architectures where:
 
 - Plain classes for models and plain arrays for collections just suffice.
@@ -56,6 +58,4 @@ Use it like this:
 
 I'm writing this for mainly one reason: **to learn JavaScript**.
 
-This is a work in progress and I don't expect you to use this at all.
-
-Comments, thoughts, contributions, insults and complaints are all welcome.
+All kind of feedback is very welcome.

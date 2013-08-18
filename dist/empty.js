@@ -1,5 +1,5 @@
 // Empty evented library
-// version: 0.1.1  
+// version: 0.1.2  
 // author: Arturo Castillo Delgado  
 // license: MIT  
 // repo: https://github.com/acstll/empty
@@ -14,7 +14,17 @@ var defaults = {
     emit: 'emit'
   },
   methods: {},
-  native: ['push', 'pop', 'unshift', 'shift', 'sort', 'filter', 'map', 'reverse']
+  native: [
+    'filter',
+    'map',
+    'push',
+    'pop',
+    'reverse',
+    'shift',
+    'sort',
+    'splice',
+    'unshift',
+  ]
 };
 
 var dotty = {};
@@ -85,7 +95,7 @@ Empty.prototype.bind = function (object) {
   var self = this;
   var bindings = {};
   var objectMethods = ['id', 'set', 'unset', 'get'];
-  var arrayMethods = ['id', 'push', 'pop', 'shift', 'unshift', 'sort', 'filter'];
+  var arrayMethods = ['id'].concat(Empty.config.native);
   var methods = Array.isArray(object) ? arrayMethods : objectMethods;
 
   methods.forEach(function (method) {
@@ -156,7 +166,7 @@ Empty.prototype.set = function (object, key, value, op) {
       previous = object[_key];
       object[_key] = obj[_key];
 
-      if (previous && previous != obj[_key]) {
+      if (typeof previous !== 'undefined' && previous != obj[_key]) {
         object._empty.previous[_key] = previous;
         
         this._emit(['change', _key].join(d), object);
@@ -179,7 +189,7 @@ Empty.prototype.set = function (object, key, value, op) {
     set(object, key, value);
   }
 
-  if (previous && previous != value) {
+  if (typeof previous !== 'undefined' && previous != value) {
     set(object._empty.previous, key, previous);
 
     this._emit('change', object);
@@ -196,24 +206,16 @@ Empty.prototype.unset = function (object, key) {
   var id;
   var d = Empty.config.delimiter;
   
+  if (!key) return;
+
   if (!object._empty) initialize(object);
-
-  // If no key, clear object.
-  if (!key) {
-    for (_key in object) {
-      if (_key !== '_empty') {
-        object[_key] = void 0;
-        delete object[_key];
-      }
-    }
-
-    return initialize(object);
-  }
 
   previous = get(object, key);
   id = ensureId.call(this, object, key);
 
-  if (unset(object, key)) {
+  if (unset(object, key) && previous !== 'undefined') {
+    set(object._empty.previous, key, previous);
+
     this._emit('change', object);
     this._emit(['change', key].join(d), object);
   } 
@@ -284,6 +286,17 @@ set.inc = function () {
   return update.apply(null, args);
 };
 
+set.toggle = function () {
+  var args = [].slice.call(arguments);
+  args.unshift(operation);
+  
+  function operation (target, value) {
+    return !target;
+  }
+  
+  return update.apply(null, args);
+};
+
 function update (fn, object, key, value) {
   var target;
   var result;
@@ -345,6 +358,8 @@ function generateId () {
 // So if the property being set is the id itself, the change:key:id event uses the latest id.
 
 function ensureId (object, key, value) {
+  if (!object._empty) initialize(object);
+  
   var oldId = object._empty.id;
   var ownId = object[Empty.config.idKey];
 
@@ -410,6 +425,7 @@ function augment () {
 
       this._emit(key, object, result);
       this._emit([key, object._empty.id].join(d), object, result);
+      this._emit(['change', object._empty.id].join(d), object, result, key);
 
       return result;
     };
@@ -428,6 +444,7 @@ function augment () {
 
       this._emit(method, array, result);
       this._emit([method, array._empty.id].join(d), array, result);
+      this._emit(['change', array._empty.id].join(d), array, result, method);
 
       return result;
     };
@@ -452,7 +469,7 @@ dotty.get = function get (object, path) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 
@@ -466,16 +483,16 @@ dotty.put = function put (object, path, value) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 
   if (path.length === 0) {
     object[key] = value;
   } else {
-    if (typeof object[key] === "undefined") object[key] = {};
+    if (typeof object[key] === 'undefined') object[key] = {};
 
-    if (typeof object[key] !== "object" || object[key] === null) return false;
+    if (typeof object[key] !== 'object' || object[key] === null) return false;
 
     return put(object[key], path, value);
   }
@@ -485,7 +502,7 @@ dotty.remove = function remove (object, path, value) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 
