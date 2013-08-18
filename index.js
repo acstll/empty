@@ -191,6 +191,7 @@ Empty.prototype.unset = function (object, key) {
   if (!object._empty) initialize(object);
 
   // If no key, clear object.
+  // TODO: fix.
   if (!key) {
     for (_key in object) {
       if (_key !== '_empty') {
