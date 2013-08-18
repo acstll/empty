@@ -405,6 +405,7 @@ function augment () {
 
       this._emit(key, object, result);
       this._emit([key, object._empty.id].join(d), object, result);
+      this._emit(['change', object._empty.id].join(d), object, result, key);
 
       return result;
     };
@@ -423,6 +424,7 @@ function augment () {
 
       this._emit(method, array, result);
       this._emit([method, array._empty.id].join(d), array, result);
+      this._emit(['change', array._empty.id].join(d), array, result, method);
 
       return result;
     };

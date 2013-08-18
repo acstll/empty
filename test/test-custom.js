@@ -9,7 +9,7 @@ Empty.use(EventEmitter);
 
 
 test('Using custom functions on arrays', function (t) {
-  t.plan(9);
+  t.plan(10);
 
   Empty.configure({
     methods: {
@@ -21,6 +21,10 @@ test('Using custom functions on arrays', function (t) {
 
   var __ = Empty();
   var arr = __.array(['foo', 'bar'], 'name');
+
+  __.once('change:name', function (arr, elem, type) {
+    t.equal(type, 'first', 'change:id event fired');
+  });
 
   __.on('first:name', function (arr, elem) {
     t.ok(arr, 'custom event fired 1');

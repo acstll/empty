@@ -62,10 +62,14 @@ test('Empty array methods initialize arrays if they\'re not', function (t) {
 });
 
 test('Empty#push', function (t) {
-  t.plan(3);
+  t.plan(4);
 
   var __ = new Empty();
   var array = __.array([1, 2, 3], 'beep');
+
+  __.on('change:' + __.id(array), function (arr, len, type) {
+    t.equal(type, 'push', 'change:id event fired');
+  });
 
   __.on('push', function (arr) {
     t.ok(arr, 'push event fired');
