@@ -6,7 +6,17 @@ var defaults = {
     emit: 'emit'
   },
   methods: {},
-  native: ['push', 'pop', 'unshift', 'shift', 'sort', 'filter', 'map', 'reverse']
+  native: [
+    'filter',
+    'map',
+    'push',
+    'pop',
+    'reverse',
+    'shift',
+    'sort',
+    'splice',
+    'unshift',
+  ]
 };
 
 var dotty = {};
@@ -77,7 +87,7 @@ Empty.prototype.bind = function (object) {
   var self = this;
   var bindings = {};
   var objectMethods = ['id', 'set', 'unset', 'get'];
-  var arrayMethods = ['id', 'push', 'pop', 'shift', 'unshift', 'sort', 'filter'];
+  var arrayMethods = ['id'].concat(Empty.config.native);
   var methods = Array.isArray(object) ? arrayMethods : objectMethods;
 
   methods.forEach(function (method) {
