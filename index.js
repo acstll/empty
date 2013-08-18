@@ -148,7 +148,7 @@ Empty.prototype.set = function (object, key, value, op) {
       previous = object[_key];
       object[_key] = obj[_key];
 
-      if (previous && previous != obj[_key]) {
+      if (typeof previous !== 'undefined' && previous != obj[_key]) {
         object._empty.previous[_key] = previous;
         
         this._emit(['change', _key].join(d), object);
@@ -171,7 +171,7 @@ Empty.prototype.set = function (object, key, value, op) {
     set(object, key, value);
   }
 
-  if (previous && previous != value) {
+  if (typeof previous !== 'undefined' && previous != value) {
     set(object._empty.previous, key, previous);
 
     this._emit('change', object);
@@ -446,7 +446,7 @@ dotty.get = function get (object, path) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 
@@ -460,16 +460,16 @@ dotty.put = function put (object, path, value) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 
   if (path.length === 0) {
     object[key] = value;
   } else {
-    if (typeof object[key] === "undefined") object[key] = {};
+    if (typeof object[key] === 'undefined') object[key] = {};
 
-    if (typeof object[key] !== "object" || object[key] === null) return false;
+    if (typeof object[key] !== 'object' || object[key] === null) return false;
 
     return put(object[key], path, value);
   }
@@ -479,7 +479,7 @@ dotty.remove = function remove (object, path, value) {
   var key;
   
   path = dotty.validate(object, path);
-  if (!path) return false;
+  if (!path) return;
 
   key = path.shift();
 

@@ -1,2 +1,3 @@
 - write README
+- test dotty somehow
 - tests for configure, id, and missing cases

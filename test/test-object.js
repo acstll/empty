@@ -35,12 +35,10 @@ test('Empty#object', function (t) {
 });
 
 test('Empty#set', function (t) {
-  t.plan(9);
+  t.plan(10);
 
   var __ = new Empty();
   var object = __.object();
-
-  object.hello = 'World';
 
   __.on('change:hello:' + __.id(object), function (obj) {
     t.ok(obj, 'change:key:id event fire');
@@ -48,8 +46,8 @@ test('Empty#set', function (t) {
 
   __.on('change:hello', function (obj) {
     t.ok(obj, 'specific handler change:key fired');
-    t.equal(obj.hello, 'dlroW', 'property changed correctly');
-    t.equal(obj._empty.previous.hello, 'World', 'previous property stored');
+    t.equal(obj.hello, 'World', 'property changed correctly');
+    t.equal(obj._empty.previous.hello, 'dlroW', 'previous property stored');
   });
 
   __.once('change', function (obj) {
@@ -58,10 +56,15 @@ test('Empty#set', function (t) {
   
   var returned = __.set(object, 'hello', 'dlroW');
   
+  t.equal(__.get(object, 'hello'), 'dlroW', 'set an unexisting property shouldn\'t fire');
+
+  __.set(object, 'hello', 'World');
+  
   t.deepEqual(object, returned, 'object remains the same object after set');
   t.ok(object._empty, 'object got initialized');
 
   __.on('change:a.b.c', function (obj) {
+    // Only second call should fire
     t.ok(obj, 'dot notation change event fired');
   });
 
