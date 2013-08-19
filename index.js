@@ -142,80 +142,65 @@ Empty.prototype.array = function (existent, id) {
 
 Empty.prototype.set = function (object, key, value, op) {
   var previous;
-  var obj;
-  var _key;
+  var action;
   var id;
   var d = Empty.config.delimiter;
+  
+  var _object;
+  var _key;
 
   if (!object._empty) initialize(object);
 
   // Handle 'key' argument as object.
   if (typeof key === 'object' && !value) {
-    obj = key;
+    _object = key;
     id = ensureId.call(this, object, key[Empty.config.idKey]);
 
-    for (_key in obj) {
+    for (_key in _object) {
+      value = _object[_key];
       previous = object[_key];
-      object[_key] = obj[_key];
+      action = value ? set : unset;
+      action(object, _key, value);
 
-      if (typeof previous !== 'undefined' && previous != obj[_key]) {
-        object._empty.previous[_key] = previous;
+      if (previous !== _object[_key]) {
+        set(object._empty.previous, _key, previous);
         
-        this._emit(['change', _key].join(d), object);
         this._emit(['change', _key, id].join(d), object);
+        this._emit(['change', _key].join(d), object);
       }  
     }
     
     this._emit('change', object);
-    
     return object;
   }
 
   // Handle normal key, value arguments.
   previous = get(object, key);
   id = ensureId.call(this, object, key, value);
-  
+
   if (typeof op === 'string') {
     set[op](object, key, value);
   } else {
-    set(object, key, value);
+    action = value ? set : unset;
+    action(object, key, value);
   }
 
-  if (typeof previous !== 'undefined' && previous != value) {
+  if (previous !== value) {
     set(object._empty.previous, key, previous);
 
-    this._emit('change', object);
-    this._emit(['change', key].join(d), object);
     this._emit(['change', key, id].join(d), object);
+    this._emit(['change', key].join(d), object);
+    this._emit('change', object);
   }
 
   return object;
 };
 
+// Convenience methods.
+
 Empty.prototype.unset = function (object, key) {
-  var _key;
-  var previous;
-  var id;
-  var d = Empty.config.delimiter;
-  
-  if (!key) return;
-
-  if (!object._empty) initialize(object);
-
-  previous = get(object, key);
-  id = ensureId.call(this, object, key);
-
-  if (unset(object, key) && previous !== 'undefined') {
-    set(object._empty.previous, key, previous);
-
-    this._emit('change', object);
-    this._emit(['change', key].join(d), object);
-  } 
-
-  return previous;
+  return this.set(object, key, void 0);
 };
-
-// Convenience method.
 
 Empty.prototype.get = function (object, key) {
   return get(object, key);

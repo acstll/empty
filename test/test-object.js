@@ -35,10 +35,11 @@ test('Empty#object', function (t) {
 });
 
 test('Empty#set', function (t) {
-  t.plan(10);
+  t.plan(9);
 
   var __ = new Empty();
-  var object = __.object();
+  var object = __.object({ hello: 'dlroW' });
+  var returned;
 
   __.on('change:hello:' + __.id(object), function (obj) {
     t.ok(obj, 'change:key:id event fire');
@@ -54,25 +55,18 @@ test('Empty#set', function (t) {
     t.ok(obj, 'general change handler got fired')
   });
   
-  var returned = __.set(object, 'hello', 'dlroW');
-  
-  t.equal(__.get(object, 'hello'), 'dlroW', 'set an unexisting property shouldn\'t fire');
-
-  __.set(object, 'hello', 'World');
+  returned = __.set(object, 'hello', 'World');
   
   t.deepEqual(object, returned, 'object remains the same object after set');
   t.ok(object._empty, 'object got initialized');
 
-  __.on('change:a.b.c', function (obj) {
-    // Only second call should fire
+  __.once('change:a.b.c', function (obj) {
     t.ok(obj, 'dot notation change event fired');
   });
 
   __.set(object, 'a.b.c', 'foo');
 
   t.equal(object.a.b.c, 'foo', 'dot notation set');
-
-  __.set(object, 'a.b.c', 'bar');
 });
 
 test('Empty#set with object passed in', function (t) {
@@ -191,7 +185,7 @@ test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
 });
 
 test('Empty#unset', function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var __ = new Empty();
   var object = __.object({
@@ -200,18 +194,21 @@ test('Empty#unset', function (t) {
       boop: 1
     }
   });
+  var returned;
 
   __.on('change:foo', function (obj) {
     t.ok(obj, 'specific handler change:key fired');
-    t.notOk(obj.foo, 'property deleted');
+    t.notOk(obj.foo, 'property unset (1)');
   });
   
   __.on('change:beep.boop', function (obj) {
     t.ok(obj, 'specific handler change:key.key.key fired');
+    t.notOk(obj.beep.boop, 'property unset (2)');
   })
 
   __.unset(object, 'foo');
-  var previous = __.unset(object, 'beep.boop');
+  
+  returned = __.unset(object, 'beep.boop');
 
-  t.equal(previous, 1, 'previous value returned');
+  t.equal(returned, object, 'returned object is the same object');
 });
