@@ -86,8 +86,13 @@ Empty.prototype._emit = function () {
 Empty.prototype.bind = function (object) {
   var self = this;
   var bindings = {};
-  var objectMethods = ['id', 'set', 'unset', 'get'];
-  var arrayMethods = ['id'].concat(Empty.config.native);
+
+  var eventsMethods = (typeof Empty.config.events === 'function')
+    ? Object.keys(Empty.config.events.prototype) 
+    : Object.keys(Empty.config.events);
+
+  var objectMethods = ['id', 'clean', 'set', 'unset', 'get'];
+  var arrayMethods = ['id', 'clean'].concat(Empty.config.native);
   var methods = Array.isArray(object) ? arrayMethods : objectMethods;
 
   methods.forEach(function (method) {
@@ -97,7 +102,15 @@ Empty.prototype.bind = function (object) {
       return self[method].apply(self, args);
     };
   });
+
+  eventsMethods.forEach(function (method) {
+    if (typeof self[method] === 'function') { 
+      bindings[method] = self[method].bind(self);
+    }
+  });
   
+  bindings.origin = object;
+
   return bindings;
 };
 
@@ -112,7 +125,7 @@ Empty.prototype.id = function (object, value) {
 // For persisting a "clean" object or array.
 // Used by toJSON function.
 
-Empty.prototype.raw = function (object) {
+Empty.prototype.clean = function (object) {
   var copy = Array.isArray(object) ? object.slice() : extend({}, object);
 
   if (copy._empty) {
@@ -323,7 +336,7 @@ function mixin (source) {
 }
 
 function toJSON () {
-  return Empty.prototype.raw(this);
+  return Empty.prototype.clean(this);
 }
 
 function generateId () {
