@@ -4,7 +4,7 @@ var Empty = require('../.');
 var EventEmitter = require('wolfy87-eventemitter');
 var _ = require('lodash');
 
-Empty.use(EventEmitter);
+Empty.configure({ events: EventEmitter });
 
 
 
@@ -19,31 +19,31 @@ test('Using custom functions on arrays', function (t) {
     }
   });
 
-  var __ = Empty();
-  var arr = __.array(['foo', 'bar'], 'name');
+  var array = ['foo', 'bar'];
+  var bound = Empty.wrap(array, 'name');
 
-  __.once('change:name', function (arr, elem, type) {
+  bound.once('change:name', function (arr, elem, type) {
     t.equal(type, 'first', 'change:id event fired');
   });
 
-  __.on('first:name', function (arr, elem) {
+  bound.on('first:name', function (arr, elem) {
     t.ok(arr, 'custom event fired 1');
     t.equal(elem, 'foo', 'result of operation passed in 1');
   });
 
-  __.on('lastIndexOf:name', function (arr, index) {
+  bound.on('lastIndexOf:name', function (arr, index) {
     t.ok(arr, 'custom event fired 2');
     t.equal(index, 1, 'result of operation passed in 2');
   });
 
-  __.on('find:name', function (arr, found) {
+  bound.on('find:name', function (arr, found) {
     t.ok(arr, 'custom event fired 3');
     t.equal(found, 'foo', 'result of operation passed in 3');
   });
 
-  var first = __.first(arr);
-  var lastIndex = __.lastIndexOf(arr, 'bar');
-  var found = __.find(arr, function (elem) { return elem == 'foo'; });
+  var first = bound.first();
+  var lastIndex = bound.lastIndexOf('bar');
+  var found = bound.find(function (elem) { return elem == 'foo'; });
 
   t.equal(first, 'foo', 'operation performed ok 1');
   t.equal(lastIndex, 1, 'operation performed ok 2');

@@ -1,32 +1,29 @@
 ## API
 
-### object([object], [id])
+### Static methods
 
-- object `Object` Object to get initialized as an "empty" object
-- id `String` Custom id for the object
+#### configure
+#### initialize
+#### wrap
 
-Initializing an object means adding an `_empty` property that keeps the previous state of the object after `change` events, and a `toJSON` function. This function proxies to the `clean` method and is there so that when you use `JSON.stringify(object)` the object stringified is the original (with no `_empty` property).
-
-If called without arguments, the function returns a new object. 
+#### extend
+#### mixin
 
 ```js
-// Empty model with custom id
-var model = __.object({}, 'foo');
+
 ```
 
-### array([array], [id])
+### Constructor…
 
-- array `Array` Array to get initialized as an "empty" array
-- id `String` Custom id for the object
-
-The same as `object()` but for arrays.
+### id
+### state
 
 ### bind(object)
 
 - object `Object | Array` The object to bind the Empty methods to
 - Returns: `Object` Object with instance methods
 
-This function binds an object (or array) to an Empty instance and returns an object with its methods.
+This function binds an object (or array) to the Empty instance and returns an object with its methods.
 
 ```js
 var array = [1, 2, 3];
@@ -63,14 +60,3 @@ Events: the same for set and unset
 ### Custom methods
 
 Events: …
-
-### Static methods
-
-#### configure
-#### use
-#### extend
-#### mixin
-
-```js
-
-```

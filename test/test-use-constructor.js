@@ -8,7 +8,7 @@ var Empty = require('../.');
 test('Instanciate with constructor', function (t) {
   t.plan(3);
 
-  Empty.use(EventEmitter);
+  Empty.configure({ events: EventEmitter });
   var __ = new Empty();
 
   __.on('testing', function (fired) {

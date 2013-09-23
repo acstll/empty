@@ -1,5 +1,8 @@
+var dotty = require('./dotty');
+
 var defaults = {
   idKey: 'id',
+  name: 'empty',
   delimiter: ':',  
   events: null,
   map: {
@@ -19,9 +22,9 @@ var defaults = {
   ]
 };
 
-var dotty = {};
 
 
+module.exports = Empty;
 
 function Empty () {
   if (!(this instanceof Empty)) {
@@ -29,11 +32,8 @@ function Empty () {
   }
 
   if (!Empty.config.events) {
-    throw new Error('You need to call Empty.use before using Empty');
+    throw new Error('You need to call Empty.configure before using Empty');
   }
-
-  // Add array methods to Empty.prototype.
-  augment();
 
   // Call EventEmitter's constructor.
   if (typeof Empty.config.events === 'function') {
@@ -41,34 +41,34 @@ function Empty () {
   }
 }
 
-Empty.config = defaults;
-
-
-
-// Set EventEmitter library to work with.
-// This must be set before anything else.
-
-Empty.use = function (Events) {
-  mixin.call(Empty, Events);
-
-  Empty.config.events = Events;
-  return Empty;
-};
-
-// Copy options to Empty.config.
-
 Empty.configure = function (options) {
-  // Call `use` to inherit EventEmitter behaviour. 
-  if (options.events) Empty.use(options.events);
+  if (typeof options !== 'object') throw new Error('Empty.configure requires an options object as first argument');
+
+  var Events = options.events;
+
+  if (Events) {
+    mixin(Empty, Events);
+    Empty.config.events = Events;
+  }
 
   Empty.config = extend({}, defaults, options);
+  
+  augment();
 };
 
-// There if you need them.
+Empty.wrap = function (object, id) {
+  object = object || {};
+  
+  if (!object[Empty.config.name]) initialize(object, id);
 
+  return (new Empty()).bind(object);
+};
+
+Empty.initialize = initialize;
+Empty.mixin = mixin;
 Empty.extend = extend;
 
-Empty.mixin = mixin;
+Empty.config = defaults;
 
 
 
@@ -78,24 +78,21 @@ Empty.prototype._emit = function () {
   this[Empty.config.map.emit].apply(this, arguments);
 };
 
-// Curry-esque method that returns an Empty instance with an object or array bound to it.  
-//
-//     var model = evented.bind(object);
-//     model.set('foo', 'bar');
+// Curry-esque method that returns the Empty instance with an object (or array) bound to it.  
 
 Empty.prototype.bind = function (object) {
-  var self = this;
   var bindings = {};
+  var self = this;
 
-  var eventsMethods = (typeof Empty.config.events === 'function')
+  var methods = Object.keys(Object.getPrototypeOf(this));
+
+  var eventMethods = (typeof Empty.config.events === 'function')
     ? Object.keys(Empty.config.events.prototype) 
     : Object.keys(Empty.config.events);
 
-  var objectMethods = ['id', 'clean', 'set', 'unset', 'get'];
-  var arrayMethods = ['id', 'clean'].concat(Empty.config.native);
-  var methods = Array.isArray(object) ? arrayMethods : objectMethods;
-
   methods.forEach(function (method) {
+    if (typeof self[method] !== 'function') return;
+
     bindings[method] = function () {
       var args = [].slice.call(arguments);
       args.unshift(object);
@@ -103,7 +100,7 @@ Empty.prototype.bind = function (object) {
     };
   });
 
-  eventsMethods.forEach(function (method) {
+  eventMethods.forEach(function (method) {
     if (typeof self[method] === 'function') { 
       bindings[method] = self[method].bind(self);
     }
@@ -119,50 +116,24 @@ Empty.prototype.bind = function (object) {
 Empty.prototype.id = function (object, value) {
   ensureId.call(this, object, value);
 
-  if (!value) return object._empty.id;
+  if (!value) return object[Empty.config.name].id;
 };
 
-// For persisting a "clean" object or array.
-// Used by toJSON function.
+Empty.prototype.state = function (object, key, value) {
+  if (!object[Empty.config.name]) initialize(object);
 
-Empty.prototype.clean = function (object) {
-  var copy = Array.isArray(object) ? object.slice() : extend({}, object);
-
-  if (copy._empty) {
-    copy._empty = void 0;
-    delete copy._empty;
+  if (typeof value === 'undefined') {
+    return object[Empty.config.name].state[key];
   }
 
-  if (copy.toJSON) {
-    copy.toJSON = void 0;
-    delete copy.toJSON;
-  }
-
-  return copy;
-};
-
-// Initialize object with evented meta data.
-
-Empty.prototype.object = function (existent, id) {
-  return initialize(existent || {}, id);
-};
-
-// Initialize array with evented meta data.
-
-Empty.prototype.array = function (existent, id) {
-  return initialize(existent || [], id);
+  object[Empty.config.name].state[key] = value;
 };
 
 Empty.prototype.set = function (object, key, value, op) {
-  var previous;
-  var action;
-  var id;
+  var previous, action, id, _object, _key;
   var d = Empty.config.delimiter;
-  
-  var _object;
-  var _key;
 
-  if (!object._empty) initialize(object);
+  if (!object[Empty.config.name]) initialize(object);
 
   // Handle 'key' argument as object.
   if (typeof key === 'object' && !value) {
@@ -176,7 +147,7 @@ Empty.prototype.set = function (object, key, value, op) {
       action(object, _key, value);
 
       if (previous !== _object[_key]) {
-        set(object._empty.previous, _key, previous);
+        set(object[Empty.config.name].previous, _key, previous);
         
         this._emit(['change', _key, id].join(d), object);
         this._emit(['change', _key].join(d), object);
@@ -199,7 +170,7 @@ Empty.prototype.set = function (object, key, value, op) {
   }
 
   if (previous !== value) {
-    set(object._empty.previous, key, previous);
+    set(object[Empty.config.name].previous, key, previous);
 
     this._emit(['change', key, id].join(d), object);
     this._emit(['change', key].join(d), object);
@@ -226,7 +197,7 @@ function set (object, key, value) {
 }
 
 // Perform array operations directly on object properties.
-// e.g. `evented.set(object, 'foo', 1, 'push');`
+// e.g. `__.set(object, 'foo', 1, 'push');`
 // is the same as `object.foo.push(1)`.  
 // `object.foo` being an array.
 
@@ -305,6 +276,8 @@ function get (object, key) {
   return dotty.get(object, key);
 }
 
+
+
 function extend (target) {
   var sources = [].slice.call(arguments, 1);
 
@@ -316,27 +289,93 @@ function extend (target) {
   return target;
 }
 
-function mixin (source) {
+function mixin (target, source) {
   var methods;
 
   if (typeof source === 'function') {
     // Save a copy of own prototype methods.
-    methods = extend({}, this.prototype);
+    methods = extend({}, target.prototype);
 
     // Set prototype for correct inheritance.
-    this.prototype = Object.create(source.prototype);
+    target.prototype = Object.create(source.prototype);
     
     // Restore original methods.
-    extend(this.prototype, methods);
+    extend(target.prototype, methods);
   } else {
-    extend(this.prototype, source);
+    extend(target.prototype, source);
   }
 
-  return this;
+  return target;
 }
 
-function toJSON () {
-  return Empty.prototype.clean(this);
+
+
+function initialize (object, id) {
+  object = object || {};
+
+  if (!object[Empty.config.name]) {
+    Object.defineProperty(object, Empty.config.name, {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+      value: empty(id || object[Empty.config.idKey])
+    });
+  }
+  
+  return object;
+}
+
+function empty (id) {
+  return {
+    id: id || generateId(),
+    state: {},
+    previous: {}
+  };
+}
+
+function augment () {
+  var methods = Empty.config.methods;
+  var keys = Object.keys(methods);
+  var d = Empty.config.delimiter;
+  
+  // Add extra methods to Empty prototype.
+
+  keys.forEach(function (key) {
+
+    Empty.prototype[key] = function (object) {
+      if (!object[Empty.config.name]) initialize(object);
+      
+      var result = methods[key].apply(null, arguments);
+      var id = object[Empty.config.name].id;
+
+      this._emit(key, object, result);
+      this._emit([key, id].join(d), object, result);
+      this._emit(['change', id].join(d), object, result, key);
+
+      return result;
+    };
+
+  });
+
+  // Add Array native methods to Empty prototype.
+
+  Empty.config.native.forEach(function (method) {
+
+    Empty.prototype[method] = function (array) {
+      if (!array[Empty.config.name]) initialize(array);
+      
+      var args = [].slice.call(arguments, 1);
+      var result = Array.prototype[method].apply(array, args);
+      var id = array[Empty.config.name].id;
+
+      this._emit(method, array, result);
+      this._emit([method, id].join(d), array, result);
+      this._emit(['change', id].join(d), array, result, method);
+
+      return result;
+    };
+
+  });
 }
 
 function generateId () {
@@ -344,13 +383,13 @@ function generateId () {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
-// Make sure _empty.id is synced to the objects idKey property.
+// Make sure empty.id is synced to the objects idKey property.
 // So if the property being set is the id itself, the change:key:id event uses the latest id.
 
 function ensureId (object, key, value) {
-  if (!object._empty) initialize(object);
+  if (!object[Empty.config.name]) initialize(object);
   
-  var oldId = object._empty.id;
+  var oldId = object[Empty.config.name].id;
   var ownId = object[Empty.config.idKey];
 
   // Case: Empty#id.
@@ -358,9 +397,9 @@ function ensureId (object, key, value) {
       && typeof value === 'undefined' 
       && typeof ownId !== 'undefined') {
     
-    object._empty.id = ownId;
+    object[Empty.config.name].id = ownId;
 
-    return object._empty.id;
+    return object[Empty.config.name].id;
   }
 
   // Case: Empty#set.
@@ -368,9 +407,9 @@ function ensureId (object, key, value) {
       && key === 'id' 
       && typeof value === 'string') {
       
-    object._empty.id = value;
+    object[Empty.config.name].id = value;
 
-    return object._empty.id;
+    return object[Empty.config.name].id;
   }
 
   // Case: Empty#set with object as key.
@@ -378,147 +417,8 @@ function ensureId (object, key, value) {
       && key !== oldId 
       && typeof value === 'undefined') {
     
-    object._empty.id = key;
+    object[Empty.config.name].id = key;
   }
 
-  return object._empty.id;
-}
-
-function initialize (object, id) {
-  if (!object._empty) object._empty = {};
-  
-  var ownId = object[Empty.config.idKey];
-  var otherId = object._empty.id || id || generateId();
-
-  object._empty.id = ownId || otherId;
-  object._empty.previous = {};
-  object._empty.persisted = false;
-
-  object.toJSON = toJSON;
-
-  return object;
-}
-
-function augment () {
-  var methods = Empty.config.methods;
-  var keys = Object.keys(methods);
-  var d = Empty.config.delimiter;
-
-  // Add extra methods to prototype.
-
-  keys.forEach(function (key) {
-
-    Empty.prototype[key] = function (object) {
-      var result = methods[key].apply(null, arguments);
-
-      if (!object._empty) initialize(object);
-
-      this._emit(key, object, result);
-      this._emit([key, object._empty.id].join(d), object, result);
-      this._emit(['change', object._empty.id].join(d), object, result, key);
-
-      return result;
-    };
-
-  });
-
-  // Add Array native methods to prototype.
-
-  Empty.config.native.forEach(function (method) {
-
-    Empty.prototype[method] = function (array) {
-      var args = [].slice.call(arguments, 1);
-      var result = Array.prototype[method].apply(array, args);
-
-      if (!array._empty) initialize(array);
-
-      this._emit(method, array, result);
-      this._emit([method, array._empty.id].join(d), array, result);
-      this._emit(['change', array._empty.id].join(d), array, result, method);
-
-      return result;
-    };
-
-  });
-}
-
-// Modification of [dotty](http://github.com/deoxxa/dotty).
-// License: 3-clause BSD.
-
-dotty.validate = function (object, path) {
-  if (typeof path === 'string') path = path.split('.');
-
-  if (!(path instanceof Array) || path.length === 0) return false;
-
-  if (typeof object !== 'object') return false;
-
-  return path.slice();
-};
-
-dotty.get = function get (object, path) {
-  var key;
-  
-  path = dotty.validate(object, path);
-  if (!path) return;
-
-  key = path.shift();
-
-  if (path.length === 0) return object[key];
-
-  if (path.length) return get(object[key], path);
-};
-
-
-dotty.put = function put (object, path, value) {
-  var key;
-  
-  path = dotty.validate(object, path);
-  if (!path) return;
-
-  key = path.shift();
-
-  if (path.length === 0) {
-    object[key] = value;
-  } else {
-    if (typeof object[key] === 'undefined') object[key] = {};
-
-    if (typeof object[key] !== 'object' || object[key] === null) return false;
-
-    return put(object[key], path, value);
-  }
-};
-
-dotty.remove = function remove (object, path, value) {
-  var key;
-  
-  path = dotty.validate(object, path);
-  if (!path) return;
-
-  key = path.shift();
-
-  if (path.length === 0) {
-    if (!Object.hasOwnProperty.call(object, key)) return false;
-
-    object[key] = void 0;
-    delete object[key];
-
-    return true;
-  } else {
-    return remove(object[key], path, value);
-  }
-};
-
-
-
-if (typeof define === 'function' && define.amd) {
-  // AMD.
-  define(function () { return Empty; });
-} else if (typeof window !== 'undefined') {
-  // Browser global.
-  window.Empty = Empty;
-}
-
-if (typeof module === 'object' && module.exports) {
-  // CommonJS.
-  module.exports = Empty;
+  return object[Empty.config.name].id;
 }

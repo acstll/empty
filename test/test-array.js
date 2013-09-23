@@ -3,69 +3,25 @@ var Empty = require('../.');
 
 var EventEmitter = require('wolfy87-eventemitter');
 
-Empty.use(EventEmitter);
+Empty.configure({ events: EventEmitter });
 
 
-
-test('Empty#array', function (t) {
-  t.plan(6);
-
-  var existent = [1, 2, 3];
-  var id;
-
-  var __ = new Empty();
-  var array = __.array();
-  var earray = __.array(existent, 'custom');
-
-  t.ok(array, 'new array created');
-  t.ok(array._empty.id, 'new array initialized');
-
-  t.equal(earray[0], 1, 'array from existent array');
-  t.ok(earray._empty.id, 'array from existent array initialized');
-
-  id = __.id(earray);
-  __.id(earray, 'testing');
-
-  t.equal(id, 'custom', 'Empty#id gets')
-  t.equal(earray._empty.id, 'testing', 'Empty#id sets');
-});
 
 test('Empty array methods initialize arrays if they\'re not', function (t) {
-  t.plan(6);
+  t.plan(1);
 
   var __ = new Empty();
-  var arr;
+  var arr = [];
 
-  arr = [];
   __.push(arr, 1);
-  t.ok(arr._empty, 'raw array initialized on operation');
-
-  arr = [1, 2];
-  __.pop(arr);
-  t.ok(arr._empty, 'raw array initialized on operation');
-
-  arr = [1, 2];
-  __.shift(arr);
-  t.ok(arr._empty, 'raw array initialized on operation');
-
-  arr = [2];
-  __.unshift(arr, 1);
-  t.ok(arr._empty, 'raw array initialized on operation');
-
-  arr = [2, 1];
-  __.sort(arr);
-  t.ok(arr._empty, 'raw array initialized on operation');
-
-  arr = [1, 2];
-  __.filter(arr, function () {});
-  t.ok(arr._empty, 'raw array initialized on operation');
+  t.ok(arr.empty, 'raw array initialized on operation');
 });
 
 test('Empty#push', function (t) {
   t.plan(4);
 
   var __ = new Empty();
-  var array = __.array([1, 2, 3], 'beep');
+  var array = Empty.initialize([1, 2, 3], 'beep');
 
   __.on('change:' + __.id(array), function (arr, len, type) {
     t.equal(type, 'push', 'change:id event fired');
@@ -87,7 +43,7 @@ test('Empty#pop', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = __.array([1, 2, 3], 'boop');
+  var array = Empty.initialize([1, 2, 3], 'boop');
 
   __.on('pop', function (arr) {
     t.ok(arr, 'pop event fired');
@@ -95,7 +51,7 @@ test('Empty#pop', function (t) {
 
   __.on('pop:boop', function (arr, elem) {
     t.ok(arr, 'pop:id event fired');
-    t.equal(arr.length, 2, 'pushed value');
+    t.equal(arr.length, 2, 'popped value');
     t.equal(elem, 3, 'popped element passed in');
   })
 
@@ -108,7 +64,7 @@ test('Empty#unshift', function (t) {
   t.plan(3);
 
   var __ = new Empty();
-  var array = __.array([1, 2, 3], 'bar');
+  var array = Empty.initialize([1, 2, 3], 'bar');
 
   __.on('unshift', function (arr) {
     t.ok(arr, 'unshift event fired');
@@ -126,7 +82,7 @@ test('Empty#shift', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = __.array([1, 2, 3], 'foo');
+  var array = Empty.initialize([1, 2, 3], 'foo');
 
   __.on('shift', function (arr) {
     t.ok(arr, 'shift event fired');
@@ -134,7 +90,7 @@ test('Empty#shift', function (t) {
 
   __.on('shift:foo', function (arr, elem) {
     t.ok(arr, 'shift:id event fired');
-    t.equal(arr.length, 2, 'pushed value');
+    t.equal(arr.length, 2, 'shifted value');
     t.equal(elem, 1, 'shifted element passed in');
   })
 
@@ -147,7 +103,7 @@ test('Empty#sort', function (t) {
   t.plan(4);
 
   var __ = new Empty();
-  var array = __.array([1, 2, 3], 'foo');
+  var array = Empty.initialize([1, 2, 3], 'foo');
 
   function compare (a, b) {
     return a < b ? 1 : -1;
@@ -171,7 +127,7 @@ test('Empty#filter', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = __.array([11, 24, 34, 101, 5, 15], 'foo');
+  var array = Empty.initialize([11, 24, 34, 101, 5, 15], 'foo');
 
   function callback (num) {
     return num > 10;

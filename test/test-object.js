@@ -3,42 +3,47 @@ var Empty = require('../.');
 
 var EventEmitter2 = require('eventemitter2').EventEmitter2;
 
-Empty.use(EventEmitter2);
+Empty.configure({ events: EventEmitter2 });
 
 
 
-test('Empty#object', function (t) {
-  t.plan(9);
+test('Empty#initialize, #id, #state', function (t) {
+  t.plan(11);
 
   var __ = new Empty();
   var existent = {
     foo: 'bar'
   };
 
-  var object = __.object();
-  var eobject = __.object(existent);
-  var idobject = __.object({}, 'custom');
+  var object = Empty.initialize();
+  var eobject = Empty.initialize(existent);
+  var idobject = Empty.initialize({}, 'custom');
 
   t.ok(object, 'new object created');
-  t.equal(object._empty.persisted, false, 'new object initialized');
-  t.ok(object.toJSON, 'toJSON function present');
+  t.ok(object.empty, 'new object initialized')
+  t.ok(object.empty.state, 'state prop present');
 
   t.equal(eobject.foo, 'bar', 'object from existent object');
-  t.equal(eobject._empty.persisted, false, 'object from existent object initialized');
-  t.ok(eobject.toJSON, 'toJSON function present on existent');
+  t.ok(eobject.empty, 'object from existent object initialized');
   t.deepEqual(eobject, existent, 'object from existent remains the same object');
 
   __.id(object, 'newId');
 
-  t.equal(idobject._empty.id, 'custom', 'custom id set');
-  t.equal(object._empty.id, 'newId', 'id set with Empty#id');
+  t.equal(idobject.empty.id, 'custom', 'custom id set');
+  t.equal(object.empty.id, 'newId', 'id set with Empty#id');
+  t.equal(__.id(object), 'newId', 'Empty#id works as getter');
+
+  __.state(object, 'persisted', 1);
+
+  t.equal(object.empty.state.persisted, 1, 'Empty#state sets correcty');
+  t.equal(__.state(object, 'persisted'), 1, 'Empty#state gets correcty');
 });
 
 test('Empty#set', function (t) {
   t.plan(9);
 
   var __ = new Empty();
-  var object = __.object({ hello: 'dlroW' });
+  var object = Empty.initialize({ hello: 'dlroW' });
   var returned;
 
   __.on('change:hello:' + __.id(object), function (obj) {
@@ -48,7 +53,7 @@ test('Empty#set', function (t) {
   __.on('change:hello', function (obj) {
     t.ok(obj, 'specific handler change:key fired');
     t.equal(obj.hello, 'World', 'property changed correctly');
-    t.equal(obj._empty.previous.hello, 'dlroW', 'previous property stored');
+    t.equal(obj.empty.previous.hello, 'dlroW', 'previous property stored');
   });
 
   __.once('change', function (obj) {
@@ -58,7 +63,7 @@ test('Empty#set', function (t) {
   returned = __.set(object, 'hello', 'World');
   
   t.deepEqual(object, returned, 'object remains the same object after set');
-  t.ok(object._empty, 'object got initialized');
+  t.ok(object.empty, 'object got initialized');
 
   __.once('change:a.b.c', function (obj) {
     t.ok(obj, 'dot notation change event fired');
@@ -149,7 +154,7 @@ test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
 
   var __ = new Empty();
 
-  var object = __.object({
+  var object = Empty.initialize({
     beep: 'boop',
     level: {
       numbers: [1, 2, 3],
@@ -188,7 +193,7 @@ test('Empty#unset', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var object = __.object({
+  var object = Empty.initialize({
     foo: 'bar',
     beep: {
       boop: 1

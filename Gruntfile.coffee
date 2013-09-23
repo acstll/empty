@@ -3,7 +3,7 @@ banner = """
   // version: <%= pkg.version %>  
   // author: Arturo Castillo Delgado  
   // license: MIT  
-  // repo: https://github.com/acstll/empty
+  // https://github.com/acstll/empty
 
   ;(function () {\n\n
   """
