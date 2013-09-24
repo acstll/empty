@@ -1,4 +1,4 @@
-var dotty = require('./dotty');
+var keypath = require('./keypath');
 
 var defaults = {
   idKey: 'id',
@@ -193,7 +193,7 @@ Empty.prototype.get = function (object, key) {
 
 
 function set (object, key, value) {
-  return dotty.put(object, key, value);
+  return keypath(object, key, value);
 }
 
 // Perform array operations directly on object properties.
@@ -262,18 +262,18 @@ function update (fn, object, key, value) {
   var target;
   var result;
 
-  target = dotty.get(object, key);
+  target = keypath(object, key);
   result = fn(target, value);
 
-  return dotty.put(object, key, result);
+  return keypath(object, key, result);
 }
 
 function unset (object, key) {
-  return dotty.remove(object, key);
+  return keypath(object, key, void 0);
 }
 
 function get (object, key) {
-  return dotty.get(object, key);
+  return keypath(object, key);
 }
 
 
