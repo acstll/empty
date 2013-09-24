@@ -70,6 +70,8 @@ Empty.extend = extend;
 
 Empty.config = defaults;
 
+Empty.VERSION = '0.2.0';
+
 
 
 // Proxy method to map to external library API.
