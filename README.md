@@ -4,7 +4,7 @@ Evented object and array operations with the events library of your choice.
 
 *This is a work in progress and I don't expect you to use this at all.*
 
-This little library should fits modular, diy MV* architectures where:
+This little library should fit modular, diy MV* architectures where:
 
 - Plain classes for models and plain arrays for collections just suffice.
 - You're already working with an EventeEmitter library in your project and don't want every other libray you use having its own implementation of pub/sub.
