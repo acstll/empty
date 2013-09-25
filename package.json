@@ -4,7 +4,9 @@
   "author": "Arturo Castillo Delgado <19@8302.net>",
   "description": "Evented object and array operations with the events library of your choice.",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+    "deep-get-set": "0.1.x"
+  },
   "devDependencies": {
     "tape": "1.0.x",
     "wolfy87-eventemitter": "4.2.x",
@@ -26,38 +28,6 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/tape ./test/*.js"
-  },
-  "testling": {
-    "files": "test/*.js",
-    "browsers": {
-      "ie": [
-        8,
-        9
-      ],
-      "firefox": [
-        5,
-        "nightly"
-      ],
-      "chrome": [
-        8,
-        "canary"
-      ],
-      "safari": [
-        5.1,
-        6
-      ],
-      "opera": [
-        11,
-        12,
-        "next"
-      ],
-      "android-browser": [
-        4.2
-      ],
-      "iphone": [
-        6
-      ]
-    }
   },
   "jshintConfig": {
     "laxbreak": true

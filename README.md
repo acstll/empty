@@ -4,7 +4,7 @@ Evented object and array operations with the events library of your choice.
 
 *This is a work in progress and I don't expect you to use this at all.*
 
-This little library fits modular, diy MV* architectures where:
+This little library should fits modular, diy MV* architectures where:
 
 - Plain classes for models and plain arrays for collections just suffice.
 - You're already working with an EventeEmitter library in your project and don't want every other libray you use having its own implementation of pub/sub.
@@ -14,45 +14,54 @@ This little library fits modular, diy MV* architectures where:
 
 Use with [browserify](https://github.com/substack/node-browserify) or [gluejs](https://github.com/mixu/gluejs):
 
-`npm install empty`
+```shell
+npm install empty
+``
 
-Available as old browser global (grab the file from the dist folder):
+## TODO
 
-`<script src="empty.js"></script>`
+- [] Write API docs.
+- [] Write example.
 
-AMD also supported, you know how that goes, haven't tested it.
-
-## Usage
+## Example of possible usage
 
 You *need* an external EventEmitter library. Require it and require Empty.
 
-	var Empty = require('empty');
-	var EventEmitter2 = require('eventemitter2').EventEmitter2
+´´´js
+var Empty = require('empty');
+var EventEmitter2 = require('eventemitter2').EventEmitter2
+´´´
 
 Call `Empty.configure` with the EventEmitter library as 'events' in a hash:
 
-	Empty.configure({
-	  events: EventEmitter2
-	});
+´´´js
+Empty.configure({
+  events: EventEmitter2
+});
+´´´
 
 Make an instance, `new` is optional. I name it `__` but of course you can name it anything you like.
 
-	var __ = new Empty();
+´´´js
+var __ = new Empty();
+´´´
 
 Use it like this:
 
-	var collection = __.array([1, 2, 3, 4], 'numbers');
+´´´js
+var collection = __.array([1, 2, 3, 4], 'numbers');
 
-	__.on('push:numbers', function (array, elem) {
-		console.log('pushed ' + elem + ' to numbers collection');
-	});
+__.on('push:numbers', function (array, elem) {
+	console.log('pushed ' + elem + ' to numbers collection');
+});
 
-	__.push(collection, 5);
-	> 5
-	> 'pushed 5 to numbers collection'
+__.push(collection, 5);
+> 5
+> 'pushed 5 to numbers collection'
 
-	collection.length;
-	> 5
+collection.length;
+> 5
+´´´
 
 ## Motivation
 

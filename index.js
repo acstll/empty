@@ -1,4 +1,5 @@
-var keypath = require('./keypath');
+var deep = require('deep-get-set');
+deep.p = true;
 
 var defaults = {
   idKey: 'id',
@@ -195,7 +196,7 @@ Empty.prototype.get = function (object, key) {
 
 
 function set (object, key, value) {
-  return keypath(object, key, value);
+  return deep(object, key, value);
 }
 
 // Perform array operations directly on object properties.
@@ -264,18 +265,18 @@ function update (fn, object, key, value) {
   var target;
   var result;
 
-  target = keypath(object, key);
+  target = deep(object, key);
   result = fn(target, value);
 
-  return keypath(object, key, result);
+  return deep(object, key, result);
 }
 
 function unset (object, key) {
-  return keypath(object, key, void 0);
+  return deep(object, key, void 0);
 }
 
 function get (object, key) {
-  return keypath(object, key);
+  return deep(object, key);
 }
 
 
