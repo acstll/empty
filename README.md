@@ -22,6 +22,7 @@ npm install empty
 
 - Write API docs.
 - Write example.
+- Make AMD and global builds.
 
 ## Example of possible usage
 
