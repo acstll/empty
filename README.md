@@ -14,41 +14,41 @@ This little library should fits modular, diy MV* architectures where:
 
 Use with [browserify](https://github.com/substack/node-browserify) or [gluejs](https://github.com/mixu/gluejs):
 
-```shell
+```bash
 npm install empty
-``
+```
 
 ## TODO
 
-- [] Write API docs.
-- [] Write example.
+- Write API docs.
+- Write example.
 
 ## Example of possible usage
 
 You *need* an external EventEmitter library. Require it and require Empty.
 
-´´´js
+```js
 var Empty = require('empty');
 var EventEmitter2 = require('eventemitter2').EventEmitter2
-´´´
+```
 
 Call `Empty.configure` with the EventEmitter library as 'events' in a hash:
 
-´´´js
+```js
 Empty.configure({
   events: EventEmitter2
 });
-´´´
+```
 
 Make an instance, `new` is optional. I name it `__` but of course you can name it anything you like.
 
-´´´js
+```js
 var __ = new Empty();
-´´´
+```
 
 Use it like this:
 
-´´´js
+```js
 var collection = __.array([1, 2, 3, 4], 'numbers');
 
 __.on('push:numbers', function (array, elem) {
@@ -61,7 +61,7 @@ __.push(collection, 5);
 
 collection.length;
 > 5
-´´´
+```
 
 ## Motivation
 
