@@ -1,9 +1,8 @@
 var test = require('tape');
 var Empty = require('../.');
 
-var EventEmitter2 = require('eventemitter2').EventEmitter2;
-
-Empty.configure({ events: EventEmitter2 });
+var EventEmitter = require('eventemitter3').EventEmitter;
+if (!Empty.config.events) Empty.configure({ events: EventEmitter });
 
 
 

@@ -1,10 +1,9 @@
 var test = require('tape');
 var Empty = require('../.');
 
-var EventEmitter = require('wolfy87-eventemitter');
 var _ = require('lodash');
-
-Empty.configure({ events: EventEmitter });
+var EventEmitter = require('eventemitter3').EventEmitter;
+if (!Empty.config.events) Empty.configure({ events: EventEmitter });
 
 
 

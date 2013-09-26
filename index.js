@@ -1,5 +1,12 @@
-var deep = require('deep-get-set');
-deep.p = true;
+try {
+  var deep = require('deep-get-set');
+  deep.p = true;
+} catch (err) {
+  var deep = function (obj, path, value) {
+    if (arguments.length === 3) obj[path] = value;
+    return obj[path];
+  };
+}
 
 var defaults = {
   idKey: 'id',
@@ -25,7 +32,8 @@ var defaults = {
 
 
 
-module.exports = Empty;
+try { module.exports = Empty; }
+catch (err) {}
 
 function Empty () {
   if (!(this instanceof Empty)) {
@@ -85,6 +93,7 @@ Empty.prototype._emit = function () {
 
 Empty.prototype.bind = function (object) {
   var bindings = {};
+  var origin = object;
   var self = this;
 
   var methods = Object.keys(Object.getPrototypeOf(this));
@@ -109,7 +118,9 @@ Empty.prototype.bind = function (object) {
     }
   });
   
-  bindings.origin = object;
+  bindings.origin = function () {
+    return origin;
+  };
 
   return bindings;
 };

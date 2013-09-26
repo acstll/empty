@@ -1,9 +1,8 @@
 var test = require('tape');
 var Empty = require('../.');
 
-var EventEmitter = require('wolfy87-eventemitter');
-
-Empty.configure({ events: EventEmitter });
+var EventEmitter = require('eventemitter3').EventEmitter;
+if (!Empty.config.events) Empty.configure({ events: EventEmitter });
 
 
 
@@ -27,7 +26,7 @@ test('Empty#bind', function (t) {
 });
 
 test('Empty#wrap', function (t) {
-  t.plan(4);
+  t.plan(5);
 
   var array = [1, 2, 3];
   var collection = Empty.wrap(array);
@@ -41,4 +40,5 @@ test('Empty#wrap', function (t) {
   t.equal(last, 3, 'method returns');
   t.equal(array.length, 2, 'method works');
   t.ok(collection.id(), 'Empty#id works on uninitialized objects');
+  t.deepEqual(collection.origin(), array, 'Empty.wrap instance\'s origin() returns original object');
 });
