@@ -117,7 +117,7 @@ Empty.prototype.bind = function (object) {
   var origin = object;
   var self = this;
 
-  var methods = Object.keys(Object.getPrototypeOf(this));
+  var methods = Object.keys(Empty.prototype);
 
   var eventMethods = (typeof Empty.config.events === 'function')
     ? Object.keys(Empty.config.events.prototype) 
