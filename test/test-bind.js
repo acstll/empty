@@ -26,19 +26,29 @@ test('Empty#bind', function (t) {
 });
 
 test('Empty#wrap', function (t) {
-  t.plan(5);
+  t.plan(9);
 
   var array = [1, 2, 3];
   var collection = Empty.wrap(array);
+
+  var Model = function (name, age) {
+    this.name = name;
+    this.age = age;
+  }
 
   collection.on('pop', function (array, last) {
     t.ok(array, 'events fire');
   });
 
   var last = collection.pop();
+  var model = Empty.wrap(Model, 'John Doe', 34);
 
   t.equal(last, 3, 'method returns');
   t.equal(array.length, 2, 'method works');
   t.ok(collection.id(), 'Empty#id works on uninitialized objects');
-  t.deepEqual(collection.origin(), array, 'Empty.wrap instance\'s origin() returns original object');
+  t.deepEqual(collection.origin, array, 'Empty.wrap instance\'s origin has original object');
+  t.ok(model.origin instanceof Model, 'model.origin is instanceof Model');
+  t.equal(model.get('name'), 'John Doe', 'Empty.wrap with constructor passed in (1)');
+  t.equal(model.get('age'), 34, 'Empty.wrap with constructor passed in (2)');
+  t.equal(JSON.stringify(model), '{"name":"John Doe","age":34}', 'JSON.stringify(model) works');
 });

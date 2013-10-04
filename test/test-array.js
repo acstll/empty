@@ -16,6 +16,18 @@ test('Empty array methods initialize arrays if they\'re not', function (t) {
   t.ok(arr.empty, 'raw array initialized on operation');
 });
 
+test('Empty#set with number as key for array bracket notation', function (t) {
+  t.plan(2);
+
+  var array = []
+  var arr = Empty.wrap(array);
+
+  arr.set(0, 'foo');
+  arr.set(5, 'bar');
+  t.equal(array[0], 'foo', 'value set');
+  t.equal(array.length, 6, 'array.length');
+});
+
 test('Empty#push', function (t) {
   t.plan(4);
 

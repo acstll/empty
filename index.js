@@ -2,11 +2,27 @@ try {
   var deep = require('deep-get-set');
   deep.p = true;
 } catch (err) {
-  var deep = function (obj, path, value) {
-    if (arguments.length === 3) obj[path] = value;
-    return obj[path];
-  };
+  if (!deep) {
+    var deep = function (obj, path, value) {
+      if (arguments.length === 3) obj[path] = value;
+      return obj[path];
+    };
+  }
 }
+
+var bind = function (object) {
+  if (typeof this !== 'function')
+    throw new TypeError('What is trying to be bound is not callable');
+
+  var self = this;
+  var args = [].slice.call(arguments, 1);
+  var bound = function () {
+    return self.apply(object || null, args.concat([].slice.call(arguments)));
+  };
+
+  bound.prototype = this.prototype;
+  return bound;
+};
 
 var defaults = {
   idKey: 'id',
@@ -33,25 +49,22 @@ var defaults = {
 
 
 try { module.exports = Empty; }
-catch (err) {}
+catch (err) { if (typeof window !== 'undefined') window.Empty = Empty; }
 
 function Empty () {
-  if (!(this instanceof Empty)) {
-    return new Empty();
-  }
+  if (!(this instanceof Empty)) return new Empty();
 
-  if (!Empty.config.events) {
+  if (!Empty.config.events)
     throw new Error('You need to call Empty.configure before using Empty');
-  }
 
   // Call EventEmitter's constructor.
-  if (typeof Empty.config.events === 'function') {
+  if (typeof Empty.config.events === 'function')
     Empty.config.events.call(this);
-  }
 }
 
 Empty.configure = function (options) {
-  if (typeof options !== 'object') throw new Error('Empty.configure requires an options object as first argument');
+  if (typeof options !== 'object')
+    throw new Error('Empty.configure requires an options object as first argument');
 
   var Events = options.events;
 
@@ -62,13 +75,22 @@ Empty.configure = function (options) {
 
   Empty.config = extend({}, defaults, options);
   
+  // Add methods (custom and native) to Empty.prototype
   augment();
 };
 
 Empty.wrap = function (object, id) {
-  object = object || {};
+  var args, instance;
   
+  object = object || {};
   if (!object[Empty.config.name]) initialize(object, id);
+  
+  if (typeof object === 'function') {
+    args = [].slice.call(arguments, 1);
+    instance = Object.create(object.prototype);
+    object.apply(instance, args);
+    return (new Empty()).bind(instance);
+  }
 
   return (new Empty()).bind(object);
 };
@@ -78,7 +100,6 @@ Empty.mixin = mixin;
 Empty.extend = extend;
 
 Empty.config = defaults;
-
 Empty.VERSION = '0.2.0';
 
 
@@ -89,7 +110,7 @@ Empty.prototype._emit = function () {
   this[Empty.config.map.emit].apply(this, arguments);
 };
 
-// Curry-esque method that returns the Empty instance with an object (or array) bound to it.  
+// Curry-esque method that returns a copy of the Empty instance with an object bound to it.  
 
 Empty.prototype.bind = function (object) {
   var bindings = {};
@@ -114,11 +135,13 @@ Empty.prototype.bind = function (object) {
 
   eventMethods.forEach(function (method) {
     if (typeof self[method] === 'function') { 
-      bindings[method] = self[method].bind(self);
+      bindings[method] = bind.call(self[method], self);
     }
   });
   
-  bindings.origin = function () {
+  bindings.origin = origin;
+
+  bindings.toJSON = function () {
     return origin;
   };
 
@@ -136,9 +159,8 @@ Empty.prototype.id = function (object, value) {
 Empty.prototype.state = function (object, key, value) {
   if (!object[Empty.config.name]) initialize(object);
 
-  if (typeof value === 'undefined') {
+  if (typeof value === 'undefined')
     return object[Empty.config.name].state[key];
-  }
 
   object[Empty.config.name].state[key] = value;
 };
@@ -184,7 +206,7 @@ Empty.prototype.set = function (object, key, value, op) {
   }
 
   if (previous !== value) {
-    set(object[Empty.config.name].previous, key, previous);
+    set(object[Empty.config.name].previous, key + '', previous);
 
     this._emit(['change', key, id].join(d), object);
     this._emit(['change', key].join(d), object);
@@ -207,6 +229,13 @@ Empty.prototype.get = function (object, key) {
 
 
 function set (object, key, value) {
+  // Support array bracket notation e.g. array[1] = 'foo'
+  // with Empty#set(array, 1, 'foo');
+  if (Array.isArray(object) && typeof key === 'number') {
+    object[key] = value;
+    return value;
+  }
+
   return deep(object, key, value);
 }
 
@@ -287,6 +316,7 @@ function unset (object, key) {
 }
 
 function get (object, key) {
+  if (Array.isArray(object) && typeof key === 'number') return object[key];
   return deep(object, key);
 }
 
