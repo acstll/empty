@@ -10,20 +10,6 @@ try {
   }
 }
 
-var bind = function (object) {
-  if (typeof this !== 'function')
-    throw new TypeError('What is trying to be bound is not callable');
-
-  var self = this;
-  var args = [].slice.call(arguments, 1);
-  var bound = function () {
-    return self.apply(object || null, args.concat([].slice.call(arguments)));
-  };
-
-  bound.prototype = this.prototype;
-  return bound;
-};
-
 var defaults = {
   idKey: 'id',
   name: 'empty',
