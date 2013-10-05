@@ -3,7 +3,7 @@ try {
   deep.p = true;
 } catch (err) {
   if (!deep) {
-    var deep = function (obj, path, value) {
+    deep = function (obj, path, value) {
       if (arguments.length === 3) obj[path] = value;
       return obj[path];
     };
@@ -190,7 +190,7 @@ Empty.prototype.toJSON = function () {
 
 
 function apply (fn) {
-  return function () {;
+  return function () {
     var args = [].slice.call(arguments);
     if (typeof this.origin === 'object') args.unshift(this.origin);
 
