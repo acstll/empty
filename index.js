@@ -110,62 +110,31 @@ Empty.prototype._emit = function () {
   this[Empty.config.map.emit].apply(this, arguments);
 };
 
-// Curry-esque method that returns a copy of the Empty instance with an object bound to it.  
+// Curry-esque method that returns an Empty instance with an object bound to it.
 
 Empty.prototype.bind = function (object) {
-  var bindings = {};
-  var origin = object;
-  var self = this;
-
-  var methods = Object.keys(Empty.prototype);
-
-  var eventMethods = (typeof Empty.config.events === 'function')
-    ? Object.keys(Empty.config.events.prototype) 
-    : Object.keys(Empty.config.events);
-
-  methods.forEach(function (method) {
-    if (typeof self[method] !== 'function') return;
-
-    bindings[method] = function () {
-      var args = [].slice.call(arguments);
-      args.unshift(object);
-      return self[method].apply(self, args);
-    };
-  });
-
-  eventMethods.forEach(function (method) {
-    if (typeof self[method] === 'function') { 
-      bindings[method] = bind.call(self[method], self);
-    }
-  });
-  
-  bindings.origin = origin;
-
-  bindings.toJSON = function () {
-    return origin;
-  };
-
-  return bindings;
+  this.origin = object;
+  return this;
 };
 
 // Id getter/setter.
 
-Empty.prototype.id = function (object, value) {
+Empty.prototype.id = apply(function (object, value) {
   ensureId.call(this, object, value);
 
   if (!value) return object[Empty.config.name].id;
-};
+});
 
-Empty.prototype.state = function (object, key, value) {
+Empty.prototype.state = apply(function (object, key, value) {
   if (!object[Empty.config.name]) initialize(object);
 
   if (typeof value === 'undefined')
     return object[Empty.config.name].state[key];
 
   object[Empty.config.name].state[key] = value;
-};
+});
 
-Empty.prototype.set = function (object, key, value, op) {
+Empty.prototype.set = apply(function (object, key, value, op) {
   var previous, action, id, _object, _key;
   var d = Empty.config.delimiter;
 
@@ -214,19 +183,34 @@ Empty.prototype.set = function (object, key, value, op) {
   }
 
   return object;
-};
+});
 
 // Convenience methods.
 
-Empty.prototype.unset = function (object, key) {
+Empty.prototype.unset = apply(function (object, key) {
   return this.set(object, key, void 0);
-};
+});
 
-Empty.prototype.get = function (object, key) {
+Empty.prototype.get = apply(function (object, key) {
   return get(object, key);
+});
+
+// For bound objects.
+
+Empty.prototype.toJSON = function () {
+  return this.origin;
 };
 
 
+
+function apply (fn) {
+  return function () {;
+    var args = [].slice.call(arguments);
+    if (typeof this.origin === 'object') args.unshift(this.origin);
+
+    return fn.apply(this, args);
+  };
+}
 
 function set (object, key, value) {
   // Support array bracket notation e.g. array[1] = 'foo'
@@ -386,7 +370,7 @@ function augment () {
 
   keys.forEach(function (key) {
 
-    Empty.prototype[key] = function (object) {
+    Empty.prototype[key] = apply(function (object) {
       if (!object[Empty.config.name]) initialize(object);
       
       var result = methods[key].apply(null, arguments);
@@ -397,7 +381,7 @@ function augment () {
       this._emit(['change', id].join(d), object, result, key);
 
       return result;
-    };
+    });
 
   });
 
@@ -405,7 +389,7 @@ function augment () {
 
   Empty.config.native.forEach(function (method) {
 
-    Empty.prototype[method] = function (array) {
+    Empty.prototype[method] = apply(function (array) {
       if (!array[Empty.config.name]) initialize(array);
       
       var args = [].slice.call(arguments, 1);
@@ -417,7 +401,7 @@ function augment () {
       this._emit(['change', id].join(d), array, result, method);
 
       return result;
-    };
+    });
 
   });
 }

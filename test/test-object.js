@@ -11,7 +11,8 @@ test('Empty#initialize, #id, #state', function (t) {
 
   var __ = new Empty();
   var existent = {
-    foo: 'bar'
+    foo: 'bar',
+    origin: { beep: 'boop' }
   };
 
   var object = Empty.initialize();
