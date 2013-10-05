@@ -52,6 +52,7 @@ Empty.configure = function (options) {
   if (typeof options !== 'object')
     throw new Error('Empty.configure requires an options object as first argument');
 
+  var native = {};
   var Events = options.events;
 
   if (Events) {
@@ -61,8 +62,15 @@ Empty.configure = function (options) {
 
   Empty.config = extend({}, defaults, options);
   
-  // Add methods (custom and native) to Empty.prototype
-  augment();
+  // Add native array methods to Empty.protoype
+  Empty.config.native.forEach(function (key) {
+    if (typeof Array.prototype[key] === 'function')
+      native[key] = Array.prototype[key];
+  });
+  augment(native, true);
+
+  // Add custom methods to Empty.prototype
+  augment(Empty.config.methods);
 };
 
 Empty.wrap = function (object, id) {
@@ -347,20 +355,18 @@ function empty (id) {
   };
 }
 
-function augment () {
-  var methods = Empty.config.methods;
-  var keys = Object.keys(methods);
+function augment (methods, isNative) {
   var d = Empty.config.delimiter;
   
-  // Add extra methods to Empty prototype.
-
-  keys.forEach(function (key) {
-
+  Object.keys(methods).forEach(function (key) {
     Empty.prototype[key] = apply(function (object) {
       if (!object[Empty.config.name]) initialize(object);
       
-      var result = methods[key].apply(null, arguments);
+      var args = isNative ? [].slice.call(arguments, 1) : arguments;
+      var context = isNative ? object : null;
       var id = object[Empty.config.name].id;
+      
+      var result = methods[key].apply(context, args);
 
       this._emit(key, object, result);
       this._emit([key, id].join(d), object, result);
@@ -368,27 +374,6 @@ function augment () {
 
       return result;
     });
-
-  });
-
-  // Add Array native methods to Empty prototype.
-
-  Empty.config.native.forEach(function (method) {
-
-    Empty.prototype[method] = apply(function (array) {
-      if (!array[Empty.config.name]) initialize(array);
-      
-      var args = [].slice.call(arguments, 1);
-      var result = Array.prototype[method].apply(array, args);
-      var id = array[Empty.config.name].id;
-
-      this._emit(method, array, result);
-      this._emit([method, id].join(d), array, result);
-      this._emit(['change', id].join(d), array, result, method);
-
-      return result;
-    });
-
   });
 }
 
