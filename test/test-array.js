@@ -20,7 +20,7 @@ test('Empty#set with number as key for array bracket notation', function (t) {
   t.plan(2);
 
   var array = []
-  var arr = Empty.wrap(array);
+  var arr = Empty(array);
 
   arr.set(0, 'foo');
   arr.set(5, 'bar');

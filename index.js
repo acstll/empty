@@ -38,10 +38,13 @@ try { module.exports = Empty; }
 catch (err) { if (typeof window !== 'undefined') window.Empty = Empty; }
 
 function Empty () {
-  if (!(this instanceof Empty)) return new Empty();
-
   if (!Empty.config.events)
     throw new Error('You need to call Empty.configure before using Empty');
+
+  if (!(this instanceof Empty)) {
+    if (arguments.length > 0) return Empty.wrap.apply(null, arguments);
+    return new Empty(); 
+  }
 
   // Call EventEmitter's constructor.
   if (typeof Empty.config.events === 'function')
