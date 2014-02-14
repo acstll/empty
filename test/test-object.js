@@ -40,7 +40,7 @@ test('Empty#initialize, #id, #state', function (t) {
 });
 
 test('Empty#set', function (t) {
-  t.plan(9);
+  t.plan(7);
 
   var __ = new Empty();
   var object = Empty.initialize({ hello: 'dlroW' });
@@ -64,14 +64,6 @@ test('Empty#set', function (t) {
   
   t.deepEqual(object, returned, 'object remains the same object after set');
   t.ok(object.empty, 'object got initialized');
-
-  __.once('change:a.b.c', function (obj) {
-    t.ok(obj, 'dot notation change event fired');
-  });
-
-  __.set(object, 'a.b.c', 'foo');
-
-  t.equal(object.a.b.c, 'foo', 'dot notation set');
 });
 
 test('Empty#set with object passed in', function (t) {
@@ -122,12 +114,7 @@ test('Empty#set shouldn\'t fire `change` when setting the same value', function 
 
   var __ = new Empty();
   var object = { 
-    foo: 'bar',
-    a: {
-      b: {
-        c: 'foo'
-      }
-    }
+    foo: 'bar'
   };
 
   __.once('change', function () {
@@ -138,15 +125,9 @@ test('Empty#set shouldn\'t fire `change` when setting the same value', function 
     t.skip('specific change:key event doesn\'t fire');
   });
 
-  __.on('change:a.b.c', function () {
-    t.skip('specific change:key with dotted notation doesn\'t fire');
-  });
-
   var returned = __.set(object, 'foo', 'bar');
 
   t.deepEqual(object, returned, 'object remains the same object after set');
-
-  __.set(object, 'a.b.c', 'foo');
 });
 
 test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
@@ -156,31 +137,29 @@ test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
 
   var object = Empty.initialize({
     beep: 'boop',
-    level: {
-      numbers: [1, 2, 3],
-      count: 0
-    },
+    numbers: [1, 2, 3],
+    count: 0,
     bool: true
   });
 
-  __.once('change:level.numbers', function (obj) {
-    t.equal(obj.level.numbers.length, 4, 'new value pushed to key');
+  __.once('change:numbers', function (obj) {
+    t.equal(obj.numbers.length, 4, 'new value pushed to key');
     // return true;
   });
 
-  __.set(object, 'level.numbers', 4, 'push');
+  __.set(object, 'numbers', 4, 'push');
 
-  __.set(object, 'level.numbers', ['five', 'six'], 'concat');
-  t.equal(object.level.numbers.length, 6, 'concat works');
+  __.set(object, 'numbers', ['five', 'six'], 'concat');
+  t.equal(object.numbers.length, 6, 'concat works');
 
-  __.set(object, 'level.numbers', null, 'pop');
-  t.equal(object.level.numbers.length, 5, 'pop works');
+  __.set(object, 'numbers', null, 'pop');
+  t.equal(object.numbers.length, 5, 'pop works');
 
-  __.set(object, 'level.count', null, 'inc');
-  t.equal(object.level.count, 1, 'inc works');
+  __.set(object, 'count', null, 'inc');
+  t.equal(object.count, 1, 'inc works');
 
-  __.set(object, 'level.count', -1, 'inc');
-  t.equal(object.level.count, 0, 'inc works with negative value');
+  __.set(object, 'count', -1, 'inc');
+  t.equal(object.count, 0, 'inc works with negative value');
 
   __.set(object, 'bool', null, 'toggle');
   t.equal(object.bool, false, 'toggle works (1)');
@@ -190,14 +169,11 @@ test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
 });
 
 test('Empty#unset', function (t) {
-  t.plan(5);
+  t.plan(3);
 
   var __ = new Empty();
   var object = Empty.initialize({
-    foo: 'bar',
-    beep: {
-      boop: 1
-    }
+    foo: 'bar'
   });
   var returned;
 
@@ -206,14 +182,7 @@ test('Empty#unset', function (t) {
     t.notOk(obj.foo, 'property unset (1)');
   });
   
-  __.on('change:beep.boop', function (obj) {
-    t.ok(obj, 'specific handler change:key.key.key fired');
-    t.notOk(obj.beep.boop, 'property unset (2)');
-  })
-
-  __.unset(object, 'foo');
+  returned = __.unset(object, 'foo');
   
-  returned = __.unset(object, 'beep.boop');
-
   t.equal(returned, object, 'returned object is the same object');
 });

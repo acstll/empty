@@ -3,11 +3,11 @@ var Empty = require('../.');
 
 
 
-test('Empty.extend', function (t) {
+test('Empty.assign', function (t) {
   t.plan(2);
 
-  var extended = Empty.extend({}, { foo: 'bar' }, { a: 1 });
-  Empty.extend(Empty, { foo: 'bar' });
+  var extended = Empty.assign({}, { foo: 'bar' }, { a: 1 });
+  Empty.assign(Empty, { foo: 'bar' });
 
   t.equal(extended.a, 1, 'extends object');
   t.equal(Empty.foo, 'bar', 'extends itself');

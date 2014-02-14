@@ -1,15 +1,3 @@
-try {
-  var deep = require('deep-get-set');
-  deep.p = true;
-} catch (err) {
-  if (!deep) {
-    deep = function (obj, path, value) {
-      if (arguments.length === 3) obj[path] = value;
-      return obj[path];
-    };
-  }
-}
-
 var defaults = {
   idKey: 'id',
   name: 'empty',
@@ -29,7 +17,11 @@ var defaults = {
     'sort',
     'splice',
     'unshift',
-  ]
+  ],
+  set: function (obj, key, value) {
+    if (arguments.length === 3) obj[key] = value;
+    return obj[key];
+  }
 };
 
 
@@ -63,7 +55,7 @@ Empty.configure = function (options) {
     Empty.config.events = Events;
   }
 
-  Empty.config = extend({}, defaults, options);
+  Empty.config = assign({}, defaults, options);
   
   // Add native array methods to Empty.protoype
   Empty.config.native.forEach(function (key) {
@@ -94,7 +86,7 @@ Empty.wrap = function (object, id) {
 
 Empty.initialize = initialize;
 Empty.mixin = mixin;
-Empty.extend = extend;
+Empty.assign = assign;
 
 Empty.config = defaults;
 Empty.VERSION = '0.2.0';
@@ -217,7 +209,7 @@ function set (object, key, value) {
     return value;
   }
 
-  return deep(object, key, value);
+  return Empty.config.set(object, key, value);
 }
 
 // Perform array operations directly on object properties.
@@ -286,24 +278,24 @@ function update (fn, object, key, value) {
   var target;
   var result;
 
-  target = deep(object, key);
+  target = Empty.config.set(object, key);
   result = fn(target, value);
 
-  return deep(object, key, result);
+  return Empty.config.set(object, key, result);
 }
 
 function unset (object, key) {
-  return deep(object, key, void 0);
+  return Empty.config.set(object, key, void 0);
 }
 
 function get (object, key) {
   if (Array.isArray(object) && typeof key === 'number') return object[key];
-  return deep(object, key);
+  return Empty.config.set(object, key);
 }
 
 
 
-function extend (target) {
+function assign (target) {
   var sources = [].slice.call(arguments, 1);
 
   sources.forEach(function (source) {
@@ -319,15 +311,15 @@ function mixin (target, source) {
 
   if (typeof source === 'function') {
     // Save a copy of own prototype methods.
-    methods = extend({}, target.prototype);
+    methods = assign({}, target.prototype);
 
     // Set prototype for correct inheritance.
     target.prototype = Object.create(source.prototype);
     
     // Restore original methods.
-    extend(target.prototype, methods);
+    assign(target.prototype, methods);
   } else {
-    extend(target.prototype, source);
+    assign(target.prototype, source);
   }
 
   return target;

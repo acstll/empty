@@ -3,17 +3,12 @@
 ### Static methods
 
 #### configure
-#### initialize
 #### wrap
-
-#### extend
-#### mixin
+#### Constructor
 
 ```js
 
 ```
-
-### Constructor…
 
 ### id
 ### state
@@ -34,14 +29,7 @@ bound.push(4);
 bound.shift();
 ```
 
-### clean(object)
-
-- object `Object | Array`
-- Returns: `Object | Array` Clean copy of the object or array
-
-This method is used internally by `toJSON`. It removes the `_empty` property and `toJSON`function added to the object when initialized.
-
-### set(object, key, [value], [operation])
+### set(object, key, value, [operation])
 
 #### 'push'
 #### 'pop'
