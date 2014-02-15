@@ -41,23 +41,26 @@ function Empty () {
   // Call EventEmitter's constructor.
   if (typeof Empty.config.events === 'function')
     Empty.config.events.call(this);
+
+  this.map = assign({}, Empty.config.map);
+
+  if (typeof this.initialize === 'function') this.initialize.apply(this);
 }
 
 Empty.configure = function (options) {
-  if (typeof options !== 'object')
-    throw new Error('Empty.configure requires an options object as first argument');
-
   var native = {};
   var Events = options.events;
 
   if (Events) {
     mixin(Empty, Events);
     Empty.config.events = Events;
+  } else if (!Empty.config.events) {
+    throw new Error('options.events should refer to an EventEmitter library');
   }
 
   Empty.config = assign({}, defaults, options);
   
-  // Add native array methods to Empty.protoype
+  // Add native array methods to Empty.prototype
   Empty.config.native.forEach(function (key) {
     if (typeof Array.prototype[key] === 'function')
       native[key] = Array.prototype[key];
@@ -89,14 +92,14 @@ Empty.mixin = mixin;
 Empty.assign = assign;
 
 Empty.config = defaults;
-Empty.VERSION = '0.2.0';
+Empty.VERSION = '0.3.0';
 
 
 
 // Proxy method to map to external library API.
 
 Empty.prototype._emit = function () {
-  this[Empty.config.map.emit].apply(this, arguments);
+  this[this.map.emit].apply(this, arguments);
 };
 
 // Curry-esque method that returns an Empty instance with an object bound to it.
