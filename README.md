@@ -1,6 +1,6 @@
 # Empty.js
 
-Evented object and array operations with the events library of your choice.
+Evented object and array operations with the events library of your choice. Or a Model class.
 
 *This is a work in progress and I don't expect you to use this at all.*
 
@@ -12,7 +12,7 @@ This little library should fit modular, diy MV* architectures where:
 
 ## Install
 
-Use with [browserify](https://github.com/substack/node-browserify) or [gluejs](https://github.com/mixu/gluejs):
+Use with [browserify](https://github.com/substack/node-browserify) or [gluejs](https://github.com/mixu/gluejs). With [npm](https://npmjs.org) do:
 
 ```bash
 npm install empty
@@ -22,7 +22,6 @@ npm install empty
 
 - Write API docs.
 - Write example.
-- Make AMD and global builds.
 
 ## Example of possible usage
 
@@ -30,37 +29,35 @@ You *need* an external EventEmitter library. Require it and require Empty.
 
 ```js
 var Empty = require('empty');
-var EventEmitter2 = require('eventemitter2').EventEmitter2
+var EventEmitter3 = require('eventemitter3');
 ```
 
 Call `Empty.configure` with the EventEmitter library as 'events' in a hash:
 
 ```js
 Empty.configure({
-  events: EventEmitter2
+  events: EventEmitter3
 });
 ```
 
-Make an instance, `new` is optional. I name it `__` but of course you can name it anything you like.
+Make an instance, `new` is optional. Pass in your actual model object.
 
 ```js
-var __ = new Empty();
+var collection = new Empty([1, 2, 3, 4]);
 ```
 
 Use it like this:
 
 ```js
-var collection = __.array([1, 2, 3, 4], 'numbers');
-
-__.on('push:numbers', function (array, elem) {
+collection.on('push', function (array, elem) {
 	console.log('pushed ' + elem + ' to numbers collection');
 });
 
-__.push(collection, 5);
+collection.push(5);
 > 5
 > 'pushed 5 to numbers collection'
 
-collection.length;
+collection.origin.length;
 > 5
 ```
 

@@ -3,16 +3,13 @@
 ### Static methods
 
 #### configure
-#### wrap
-#### Constructor
+#### wrap (Constructor)
 
 ```js
 
 ```
 
 ### id
-### state
-
 ### bind(object)
 
 - object `Object | Array` The object to bind the Empty methods to
@@ -29,7 +26,7 @@ bound.push(4);
 bound.shift();
 ```
 
-### set(object, key, value, [operation])
+### set(object, values, [operation])
 
 #### 'push'
 #### 'pop'
