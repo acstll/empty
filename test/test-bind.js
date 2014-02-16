@@ -19,15 +19,16 @@ test('Empty#bind', function (t) {
   });
 
   var length = collection.push(4);
+  array.id = 'beep';
 
-  t.equal(length, 4, 'method returns');
-  t.equal(array[3], 4, 'method works');
-  t.ok(collection.id(), 'Empty#id works on uninitialized objects');
+  t.equal(length, 4, 'methods return');
+  t.equal(array[3], 4, 'methods work');
+  t.equal(collection.id(), 'beep', 'Empty#id works');
   t.ok(collection instanceof Empty, 'bound object is instance of Empty');
 });
 
 test('Empty#wrap', function (t) {
-  t.plan(9);
+  t.plan(8);
 
   var array = [1, 2, 3];
   var collection = Empty.wrap(array);
@@ -44,9 +45,8 @@ test('Empty#wrap', function (t) {
   var last = collection.pop();
   var model = Empty.wrap(Model, 'John Doe', 34);
 
-  t.equal(last, 3, 'method returns');
-  t.equal(array.length, 2, 'method works');
-  t.ok(collection.id(), 'Empty#id works on uninitialized objects');
+  t.equal(last, 3, 'methods return');
+  t.equal(array.length, 2, 'methods work');
   t.deepEqual(collection.origin, array, 'Empty.wrap instance\'s origin has original object');
   t.ok(model.origin instanceof Model, 'model.origin is instanceof Model');
   t.equal(model.get('name'), 'John Doe', 'Empty.wrap with constructor passed in (1)');

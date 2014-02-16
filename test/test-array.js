@@ -6,24 +6,14 @@ if (!Empty.config.events) Empty.configure({ events: EventEmitter });
 
 
 
-test('Empty array methods initialize arrays if they\'re not', function (t) {
-  t.plan(1);
-
-  var __ = new Empty();
-  var arr = [];
-
-  __.push(arr, 1);
-  t.ok(arr.empty, 'raw array initialized on operation');
-});
-
 test('Empty#set with number as key for array bracket notation', function (t) {
   t.plan(2);
 
   var array = []
   var arr = Empty(array);
 
-  arr.set(0, 'foo');
-  arr.set(5, 'bar');
+  arr.set({ 0: 'foo' });
+  arr.set({ 5: 'bar' });
   t.equal(array[0], 'foo', 'value set');
   t.equal(array.length, 6, 'array.length');
 });
@@ -32,9 +22,10 @@ test('Empty#push', function (t) {
   t.plan(4);
 
   var __ = new Empty();
-  var array = Empty.initialize([1, 2, 3], 'beep');
+  var array = [1, 2, 3];
+  array.id = 'beep';
 
-  __.on('change:' + __.id(array), function (arr, len, type) {
+  __.on('change:beep', function (arr, len, type) {
     t.equal(type, 'push', 'change:id event fired');
   });
 
@@ -54,7 +45,8 @@ test('Empty#pop', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = Empty.initialize([1, 2, 3], 'boop');
+  var array = [1, 2, 3];
+  array.id = 'boop';
 
   __.on('pop', function (arr) {
     t.ok(arr, 'pop event fired');
@@ -75,7 +67,8 @@ test('Empty#unshift', function (t) {
   t.plan(3);
 
   var __ = new Empty();
-  var array = Empty.initialize([1, 2, 3], 'bar');
+  var array = [1, 2, 3];
+  array.id = 'bar';
 
   __.on('unshift', function (arr) {
     t.ok(arr, 'unshift event fired');
@@ -93,7 +86,8 @@ test('Empty#shift', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = Empty.initialize([1, 2, 3], 'foo');
+  var array = [1, 2, 3];
+  array.id = 'foo';
 
   __.on('shift', function (arr) {
     t.ok(arr, 'shift event fired');
@@ -114,7 +108,8 @@ test('Empty#sort', function (t) {
   t.plan(4);
 
   var __ = new Empty();
-  var array = Empty.initialize([1, 2, 3], 'foo');
+  var array = [1, 2, 3];
+  array.id = 'foo';
 
   function compare (a, b) {
     return a < b ? 1 : -1;
@@ -138,7 +133,8 @@ test('Empty#filter', function (t) {
   t.plan(5);
 
   var __ = new Empty();
-  var array = Empty.initialize([11, 24, 34, 101, 5, 15], 'foo');
+  var array = [11, 24, 34, 101, 5, 15];
+  array.id = 'foo';
 
   function callback (num) {
     return num > 10;

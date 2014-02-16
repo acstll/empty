@@ -6,78 +6,75 @@ if (!Empty.config.events) Empty.configure({ events: EventEmitter });
 
 
 
-test('Empty#initialize, #id, #state', function (t) {
-  t.plan(11);
-
-  var __ = new Empty();
-  var existent = {
+test('Empty#id', function (t) {
+  t.plan(2);
+  
+  var w = Empty({
     foo: 'bar',
-    origin: { beep: 'boop' }
-  };
+    id: 0
+  });
+  var o = Empty({
+    foo: 'baz'
+  });
 
-  var object = Empty.initialize();
-  var eobject = Empty.initialize(existent);
-  var idobject = Empty.initialize({}, 'custom');
-
-  t.ok(object, 'new object created');
-  t.ok(object.empty, 'new object initialized')
-  t.ok(object.empty.state, 'state prop present');
-
-  t.equal(eobject.foo, 'bar', 'object from existent object');
-  t.ok(eobject.empty, 'object from existent object initialized');
-  t.deepEqual(eobject, existent, 'object from existent remains the same object');
-
-  __.id(object, 'newId');
-
-  t.equal(idobject.empty.id, 'custom', 'custom id set');
-  t.equal(object.empty.id, 'newId', 'id set with Empty#id');
-  t.equal(__.id(object), 'newId', 'Empty#id works as getter');
-
-  __.state(object, 'persisted', 1);
-
-  t.equal(object.empty.state.persisted, 1, 'Empty#state sets correcty');
-  t.equal(__.state(object, 'persisted'), 1, 'Empty#state gets correcty');
+  t.equal(w.id(), 0, 'works with id set');
+  t.equal(o.id(), undefined, 'returns undefined if not');
 });
 
+test('Empty#initialize', function (t) {
+  t.plan(3);
+
+  var counter = 0;
+  
+  Empty.prototype.initialize = function () {
+    this.origin[this.idKey] = ++counter;
+  };
+
+  var i1 = Empty({});
+  var i2 = Empty({});
+  var i3 = Empty({});
+
+  t.equal(i1.id(), 1, 'gets called on Empty#bind');
+  t.equal(i2.id(), 2, 'gets called on Empty#bind');
+  t.equal(i3.id(), 3, 'gets called on Empty#bind');
+});
+
+return;
+
 test('Empty#set', function (t) {
-  t.plan(7);
+  t.plan(4);
 
   var __ = new Empty();
-  var object = Empty.initialize({ hello: 'dlroW' });
+  var object = { hello: 'dlroW' };
   var returned;
-
-  __.on('change:hello:' + __.id(object), function (obj) {
-    t.ok(obj, 'change:key:id event fire');
-  });
 
   __.on('change:hello', function (obj) {
     t.ok(obj, 'specific handler change:key fired');
     t.equal(obj.hello, 'World', 'property changed correctly');
-    t.equal(obj.empty.previous.hello, 'dlroW', 'previous property stored');
   });
 
   __.once('change', function (obj) {
     t.ok(obj, 'general change handler got fired')
   });
   
-  returned = __.set(object, 'hello', 'World');
+  returned = __.set(object, { hello: 'World' });
   
   t.deepEqual(object, returned, 'object remains the same object after set');
-  t.ok(object.empty, 'object got initialized');
 });
 
-test('Empty#set with object passed in', function (t) {
+test('Empty#set, with many properties', function (t) {
   t.plan(8);
 
   var __ = new Empty();
   var object = {
-    id: 'beep',
+    id: '123',
     foo: 'bar',
-    baz: 1
+    baz: 1,
+    beep: 'boop'
   };
   var called = 0;
 
-  __.on('change:foo:beep', function (obj) {
+  __.on('change:foo:123', function (obj) {
     t.ok(obj, 'change:key:id event fired');
   });
 
@@ -97,15 +94,20 @@ test('Empty#set with object passed in', function (t) {
     t.equal(obj.baz, 2, 'property 2 set');
   });
 
+  __.on('change:beep', function () {
+    t.skip('specific handler change:key didn\'t fire for unchanged value');
+  });
+
   var returned = __.set(object, {
     foo: 'BAR',
-    baz: 2
+    baz: 2,
+    beep: 'boop'
   });
 
   t.deepEqual(object, returned, 'object remains the same object after set');
   
   setTimeout(function () {
-    t.equal(called, 1, 'general change event fired once');
+    t.equal(called, 1, 'general change event fired just once');
   }, 0);
 });
 
@@ -125,46 +127,46 @@ test('Empty#set shouldn\'t fire `change` when setting the same value', function 
     t.skip('specific change:key event doesn\'t fire');
   });
 
-  var returned = __.set(object, 'foo', 'bar');
+  var returned = __.set(object, { foo: 'bar' });
 
   t.deepEqual(object, returned, 'object remains the same object after set');
 });
 
 test('Empty#set push, pop, concat, inc, toggle operations', function (t) {
-  t.plan(7);
+  t.plan(8);
 
   var __ = new Empty();
 
-  var object = Empty.initialize({
+  var object = {
     beep: 'boop',
     numbers: [1, 2, 3],
     count: 0,
     bool: true
-  });
+  };
 
   __.once('change:numbers', function (obj) {
     t.equal(obj.numbers.length, 4, 'new value pushed to key');
-    // return true;
+    t.deepEqual(obj.numbers[3], 4, 'new value pushed to key');
   });
 
-  __.set(object, 'numbers', 4, 'push');
+  __.set(object, { 'numbers': 4 }, 'push');
 
-  __.set(object, 'numbers', ['five', 'six'], 'concat');
+  __.set(object, { 'numbers': ['five', 'six'] }, 'concat');
   t.equal(object.numbers.length, 6, 'concat works');
 
-  __.set(object, 'numbers', null, 'pop');
+  __.set(object, { 'numbers': null }, 'pop');
   t.equal(object.numbers.length, 5, 'pop works');
 
-  __.set(object, 'count', null, 'inc');
+  __.set(object, { 'count': null }, 'inc');
   t.equal(object.count, 1, 'inc works');
 
-  __.set(object, 'count', -1, 'inc');
+  __.set(object, { 'count': -1 }, 'inc');
   t.equal(object.count, 0, 'inc works with negative value');
 
-  __.set(object, 'bool', null, 'toggle');
+  __.set(object, { 'bool': null }, 'toggle');
   t.equal(object.bool, false, 'toggle works (1)');
 
-  __.set(object, 'bool', null, 'toggle');
+  __.set(object, { 'bool': null }, 'toggle');
   t.equal(object.bool, true, 'toggle works (2)');
 });
 
@@ -172,9 +174,9 @@ test('Empty#unset', function (t) {
   t.plan(3);
 
   var __ = new Empty();
-  var object = Empty.initialize({
+  var object = {
     foo: 'bar'
-  });
+  };
   var returned;
 
   __.on('change:foo', function (obj) {
@@ -182,7 +184,8 @@ test('Empty#unset', function (t) {
     t.notOk(obj.foo, 'property unset (1)');
   });
   
-  returned = __.unset(object, 'foo');
+  returned = __.unset(object, { foo: null });
+  // returned = __.set(object, { foo: void 0 });
   
   t.equal(returned, object, 'returned object is the same object');
 });

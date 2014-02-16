@@ -18,8 +18,7 @@ test('Using custom functions on arrays', function (t) {
     }
   });
 
-  var array = ['foo', 'bar'];
-  var bound = Empty(array, 'name');
+  var bound = Empty(['foo', 'bar'], 'name');
 
   bound.once('change:name', function (arr, elem, type) {
     t.equal(type, 'first', 'change:id event fired');

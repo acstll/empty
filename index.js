@@ -43,8 +43,7 @@ function Empty () {
     Empty.config.events.call(this);
 
   this.map = assign({}, Empty.config.map);
-
-  if (typeof this.initialize === 'function') this.initialize.apply(this);
+  this.idKey = Empty.config.idKey;
 }
 
 Empty.configure = function (options) {
@@ -75,7 +74,7 @@ Empty.wrap = function (object, id) {
   var args, instance;
   
   object = object || {};
-  if (!object[Empty.config.name]) initialize(object, id);
+  if (typeof id !== 'undefined') object[Empty.config.idKey] = id;
   
   if (typeof object === 'function') {
     args = [].slice.call(arguments, 1);
@@ -87,7 +86,6 @@ Empty.wrap = function (object, id) {
   return (new Empty()).bind(object);
 };
 
-Empty.initialize = initialize;
 Empty.mixin = mixin;
 Empty.assign = assign;
 
@@ -105,86 +103,60 @@ Empty.prototype._emit = function () {
 // Curry-esque method that returns an Empty instance with an object bound to it.
 
 Empty.prototype.bind = function (object) {
+  if (typeof this.origin === 'object')
+    throw new Error('Cannot call #bind on an already bound Empty instace');
+
   this.origin = object;
+  this.previous = {};
+
+  if (typeof this.initialize === 'function') this.initialize.apply(this);
+
   return this;
 };
 
-// Id getter/setter.
-
-Empty.prototype.id = apply(function (object, value) {
-  ensureId.call(this, object, value);
-
-  if (!value) return object[Empty.config.name].id;
+Empty.prototype.id = apply(function (object) {
+  if (typeof this.origin === 'object')
+    return this.origin[Empty.config.idKey];
 });
 
-Empty.prototype.state = apply(function (object, key, value) {
-  if (!object[Empty.config.name]) initialize(object);
-
-  if (typeof value === 'undefined')
-    return object[Empty.config.name].state[key];
-
-  object[Empty.config.name].state[key] = value;
-});
-
-Empty.prototype.set = apply(function (object, key, value, op) {
-  var previous, action, id, _object, _key;
+Empty.prototype.set = apply(function (object, values, op) {
+  var key, previous, action, value;
+  var id = values[Empty.config.idKey] || object[Empty.config.idKey];
+  var changed = Object.create(null);
   var d = Empty.config.delimiter;
+  
+  for (key in values) {
+    value = values[key];
+    previous = get(object, key);
 
-  if (!object[Empty.config.name]) initialize(object);
-
-  // Handle 'key' argument as object.
-  if (typeof key === 'object' && !value) {
-    _object = key;
-    id = ensureId.call(this, object, key[Empty.config.idKey]);
-
-    for (_key in _object) {
-      value = _object[_key];
-      previous = object[_key];
+    if (typeof op === 'string') {
+      set[op](object, key, value);
+    } else {
       action = value ? set : unset;
-      action(object, _key, value);
-
-      if (previous !== _object[_key]) {
-        set(object[Empty.config.name].previous, _key, previous);
-        
-        this._emit(['change', _key, id].join(d), object);
-        this._emit(['change', _key].join(d), object);
-      }  
+      action(object, key, value);
     }
-    
-    this._emit('change', object);
-    return object;
+
+    if (previous !== value) {
+      set(changed, key + '', previous);
+      if (id) this._emit(['change', key, id].join(d), object);
+      this._emit(['change', key].join(d), object);
+    }  
   }
-
-  // Handle normal key, value arguments.
-  previous = get(object, key);
-  id = ensureId.call(this, object, key, value);
-
-  if (typeof op === 'string') {
-    set[op](object, key, value);
-  } else {
-    action = value ? set : unset;
-    action(object, key, value);
-  }
-
-  if (previous !== value) {
-    set(object[Empty.config.name].previous, key + '', previous);
-
-    this._emit(['change', key, id].join(d), object);
-    this._emit(['change', key].join(d), object);
+  
+  if (Object.keys(changed).length > 0) {
+    if (this.previous) this.previous = changed;
     this._emit('change', object);
   }
 
   return object;
 });
 
-// Convenience methods.
-
-Empty.prototype.unset = apply(function (object, key) {
-  return this.set(object, key, void 0);
-});
-
 Empty.prototype.get = apply(function (object, key) {
   return get(object, key);
+});
+
+Empty.prototype.unset = apply(function (object, values) {
+  return this.set(object, values, void 0);
 });
 
 // For bound objects.
@@ -206,7 +178,7 @@ function apply (fn) {
 
 function set (object, key, value) {
   // Support array bracket notation e.g. array[1] = 'foo'
-  // with Empty#set(array, 1, 'foo');
+  // with Empty#set(array, { 1: null }, 'foo');
   if (Array.isArray(object) && typeof key === 'number') {
     object[key] = value;
     return value;
@@ -216,7 +188,7 @@ function set (object, key, value) {
 }
 
 // Perform array operations directly on object properties.
-// e.g. `__.set(object, 'foo', 1, 'push');`
+// e.g. `__.set(object, { 'foo': 1 }, 'push');`
 // is the same as `object.foo.push(1)`.  
 // `object.foo` being an array.
 
@@ -330,92 +302,23 @@ function mixin (target, source) {
 
 
 
-function initialize (object, id) {
-  object = object || {};
-
-  if (!object[Empty.config.name]) {
-    Object.defineProperty(object, Empty.config.name, {
-      enumerable: false,
-      configurable: false,
-      writable: true,
-      value: empty(id || object[Empty.config.idKey])
-    });
-  }
-  
-  return object;
-}
-
-function empty (id) {
-  return {
-    id: id || generateId(),
-    state: {},
-    previous: {}
-  };
-}
-
 function augment (methods, isNative) {
   var d = Empty.config.delimiter;
   
   Object.keys(methods).forEach(function (key) {
     Empty.prototype[key] = apply(function (object) {
-      if (!object[Empty.config.name]) initialize(object);
-      
       var args = isNative ? [].slice.call(arguments, 1) : arguments;
       var context = isNative ? object : null;
-      var id = object[Empty.config.name].id;
-      
+      var id = object[Empty.config.idKey];
       var result = methods[key].apply(context, args);
 
       this._emit(key, object, result);
-      this._emit([key, id].join(d), object, result);
-      this._emit(['change', id].join(d), object, result, key);
+      if (id) {
+        this._emit([key, id].join(d), object, result);
+        this._emit(['change', id].join(d), object, result, key);
+      }
 
       return result;
     });
   });
-}
-
-function generateId () {
-  // https://github.com/mkuklis/depot.js/blob/master/depot.js#L207
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-// Make sure empty.id is synced to the objects idKey property.
-// So if the property being set is the id itself, the change:key:id event uses the latest id.
-
-function ensureId (object, key, value) {
-  if (!object[Empty.config.name]) initialize(object);
-  
-  var oldId = object[Empty.config.name].id;
-  var ownId = object[Empty.config.idKey];
-
-  // Case: Empty#id.
-  if (typeof key === 'undefined' 
-      && typeof value === 'undefined' 
-      && typeof ownId !== 'undefined') {
-    
-    object[Empty.config.name].id = ownId;
-
-    return object[Empty.config.name].id;
-  }
-
-  // Case: Empty#set.
-  if (typeof key === 'string' 
-      && key === 'id' 
-      && typeof value === 'string') {
-      
-    object[Empty.config.name].id = value;
-
-    return object[Empty.config.name].id;
-  }
-
-  // Case: Empty#set with object as key.
-  if (typeof key === 'string'
-      && key !== oldId 
-      && typeof value === 'undefined') {
-    
-    object[Empty.config.name].id = key;
-  }
-
-  return object[Empty.config.name].id;
 }
