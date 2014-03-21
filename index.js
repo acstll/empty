@@ -62,14 +62,14 @@
 
     Empty.config = assign({}, defaults, options);
     
-    // Add native array methods to Empty.prototype
+    // Add native array methods to Empty.prototype.
     Empty.config.native.forEach(function (key) {
       if (typeof Array.prototype[key] === 'function')
         native[key] = Array.prototype[key];
     });
     augment(native, true);
 
-    // Add custom methods to Empty.prototype
+    // Add custom methods to Empty.prototype.
     augment(Empty.config.methods);
   };
 
