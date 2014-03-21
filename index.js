@@ -3,7 +3,6 @@
 
   var defaults = {
     idKey: 'id',
-    name: 'empty',
     delimiter: ':',  
     events: null,
     map: {
@@ -119,12 +118,14 @@
 
   Empty.prototype.id = apply(function (object) {
     if (typeof this.origin === 'object')
-      return this.origin[Empty.config.idKey];
+      return this.origin[this.idKey];
+
+    return object[this.idKey]
   });
 
   Empty.prototype.set = apply(function (object, values, op) {
     var key, previous, action, value;
-    var id = values[Empty.config.idKey] || object[Empty.config.idKey];
+    var id = values[this.idKey] || object[this.idKey];
     var changed = Object.create(null);
     var d = Empty.config.delimiter;
     
@@ -312,7 +313,7 @@
       Empty.prototype[key] = apply(function (object) {
         var args = isNative ? [].slice.call(arguments, 1) : arguments;
         var context = isNative ? object : null;
-        var id = object[Empty.config.idKey];
+        var id = object[this.idKey];
         var result = methods[key].apply(context, args);
 
         this._emit(key, object, result);
